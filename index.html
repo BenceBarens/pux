@@ -387,6 +387,7 @@
         <div class="color-swatches">
           <div class="swatch" style="background: #ef4444;" onclick="setColor('#ef4444')"></div>
           <div class="swatch" style="background: #eab308;" onclick="setColor('#eab308')"></div>
+          <div class="swatch" style="background: #22c55e;" onclick="setColor('#22c55e')"></div>
           <div class="swatch" style="background: #3b82f6;" onclick="setColor('#3b82f6')"></div>
           <div class="swatch" style="background: #ffffff;" onclick="setColor('#ffffff')"></div>
           <div class="swatch" style="background: #000000; border-color: #000000;" onclick="setColor('#000000')"></div>
@@ -732,12 +733,13 @@
       topUiContainer.style.pointerEvents = 'none';
       if (!isTextHidden) toggleText();
       
-      // FIX voor uitgerekt canvas: geef de lay-out 50ms om te verwerken voor we dimensies opmeten
+      // FIX: Wacht 450ms tot de tekst-inklap animatie (0.4s) he-le-maal klaar is
       setTimeout(() => {
         resizeCanvas();
-      }, 50);
+      }, 450);
     } else {
       userInputBox.classList.add('active');
+      // Scroll direct naar input zodat user het ziet
       lyricsContainer.scrollTo({ top: lyricsContainer.scrollHeight, behavior: 'smooth' });
     }
   }
@@ -829,22 +831,23 @@
   }
   mapToggleBtn.addEventListener('click', toggleMap);
 
+  // Teken Canvas Init
   const canvas = document.getElementById('drawing-pad');
   const ctx = canvas.getContext('2d');
   let isDrawing = false;
-  let currentCanvasColor = '#000000';
+  let currentStrokeColor = '#000000'; // Onthoud de kleur na een resize
 
   function resizeCanvas() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = currentCanvasColor;
+    ctx.strokeStyle = currentStrokeColor;
   }
   window.addEventListener('resize', resizeCanvas);
 
   function setColor(color) { 
-    currentCanvasColor = color;
+    currentStrokeColor = color;
     ctx.strokeStyle = color; 
   }
 
@@ -865,15 +868,36 @@
     draw(new MouseEvent("mousemove", { clientX: touch.clientX, clientY: touch.clientY }));
   }, { passive: false });
 
-  function startPos(e) { isDrawing = true; draw(e); }
-  function endPos() { isDrawing = false; ctx.beginPath(); }
+  // FIX: Rekening houden met uitgerekte verhoudingen via schaalberekening
+  function startPos(e) { 
+    isDrawing = true; 
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    ctx.beginPath();
+    ctx.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+    draw(e); 
+  }
+  
+  function endPos() { 
+    isDrawing = false; 
+    ctx.beginPath(); 
+  }
+  
   function draw(e) {
     if (!isDrawing) return;
     const rect = canvas.getBoundingClientRect();
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    // Bereken de exacte locatie, ongeacht de canvas flex-grootte
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    ctx.lineTo(x, y);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.moveTo(x, y);
   }
 
   loadStop(3);
