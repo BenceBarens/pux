@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Museumplein Podwalk Prototype</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --purple: #6200ea;
+      --text-dark: #1a1a1a;
+      --text-muted: #666;
+      --bg-light: #f8f9fa;
+      --ui-radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+    html, body {
+      background-color: #000;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #app-container {
+      width: 100%;
+      height: 100%;
+      max-width: 430px;
+      position: relative;
+      background-color: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bg-layer {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: opacity 0.4s ease;
+      z-index: 1;
+    }
+
+    #bg-map { 
+      background-image: url('map.png'); 
+      opacity: 0; 
+      pointer-events: none;
+    }
+
+    #top-ui-container {
+      position: absolute;
+      top: 40px;
+      left: 16px;
+      right: 16px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    #top-card {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: var(--ui-radius);
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .top-info p { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
+    .top-info h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--text-dark); margin-bottom: 2px; }
+    .top-info span { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+    
+    .distance-indicator { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+    .arrow-icon { 
+      margin-bottom: 2px; 
+      display: inline-flex; 
+      align-items: center;
+      justify-content: center;
+      transform-origin: center;
+      transition: transform 0.1s ease-out;
+    }
+    .distance-text { font-size: 0.65rem; font-weight: 700; color: var(--text-dark); }
+
+    #paginator {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      white-space: nowrap; /* Fixes wrap over 3 lines */
+    }
+    
+    #paginator button {
+      background: transparent;
+      border: none;
+      font-size: 1.4rem;
+      color: var(--text-dark);
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+
+    .page-indicator-content {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .p-dots { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
+    .dot { width: 4px; height: 4px; background-color: #d1d5db; border-radius: 50%; display: inline-block; }
+    .dot.active-dot { width: 14px; background-color: var(--purple); border-radius: 4px; }
+
+    #pip-character {
+      position: absolute;
+      left: -10px;
+      width: 130px;
+      z-index: 50; /* Always on top */
+      pointer-events: none;
+      transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    #map-toggle {
+      position: absolute;
+      right: 16px;
+      width: 46px;
+      height: 46px;
+      background-color: var(--purple);
+      border-radius: 50%;
+      z-index: 50; /* Always on top */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+    }
+
+    #map-toggle svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    #canvas-layer { position: absolute; inset: 0; background: white; z-index: 5; display: none; flex-direction: column; }
+    #canvas-layer.active { display: flex; }
+    .canvas-tools { position: absolute; top: 40px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+    .color-swatches { display: flex; gap: 6px; }
+    .swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #000; cursor: pointer; }
+    .save-btn { background: var(--purple); color: white; border: none; padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+    canvas { flex-grow: 1; width: 100%; touch-action: none; cursor: crosshair; }
+
+    #bottom-card {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 0;
+      z-index: 20;
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #collapsible-text {
+      padding: 24px 20px 0;
+      display: flex;
+      flex-direction: column;
+      height: 32vh;
+      transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.4s;
+      overflow: hidden;
+      background: #fff;
+    }
+    #collapsible-text.hidden { height: 0; padding-top: 0; }
+
+    .lyrics-container {
+      position: relative; 
+      font-family: 'Playfair Display', serif; /* Consistent with title */
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #9ca3af; 
+      overflow-y: auto;
+      flex-grow: 1;
+      padding-top: 10px;
+      padding-right: 4px;
+      padding-bottom: 20px;
+      overscroll-behavior: contain;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+    }
+    .lyrics-container::-webkit-scrollbar { width: 0px; background: transparent; } /* Removes gray track bar */
+
+    .lyric-line {
+      font-family: 'Playfair Display', serif;
+      margin-bottom: 12px;
+      transition: color 0.3s ease, transform 0.3s ease;
+      cursor: pointer;
+      transform-origin: left center;
+    }
+    .lyric-line.active { color: var(--purple); font-weight: 600; transform: scale(1.02); }
+
+    .user-input-box { margin-top: 10px; margin-bottom: 16px; display: none; flex-shrink: 0; }
+    .user-input-box.active { display: flex; gap: 8px; }
+    .user-input-box input {
+      font-family: 'Playfair Display', serif;
+      flex-grow: 1; padding: 14px 16px; border: 1px solid #e5e7eb; border-radius: 12px; font-size: 1rem; background: #fff; outline: none; transition: border-color 0.2s;
+    }
+    .user-input-box input:focus { border-color: var(--purple); }
+    .user-input-box .save-btn { margin: 0; padding: 0 20px; }
+
+    .media-controls-wrapper { padding: 16px 20px 24px; background: #fff; }
+    .player-buttons-container { display: flex; justify-content: center; margin-bottom: 16px; }
+    .player-buttons { display: flex; justify-content: center; align-items: center; gap: 20px; background-color: #e6f4ea; padding: 6px 24px; border-radius: 40px; }
+    .icon-btn { background: none; border: none; color: #1a1a1a; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    
+    .play-btn { 
+      background: var(--purple); color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; border: none; cursor: pointer;
+    } /* Glow removed */
+
+    .player-timeline { display: flex; align-items: center; gap: 16px; }
+    .progress-track { flex-grow: 1; height: 6px; background: #e5e7eb; border-radius: 3px; position: relative; cursor: pointer; }
+    .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--purple); border-radius: 3px; pointer-events: none;}
+    .progress-fill::after { 
+      content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background-color: var(--purple); border-radius: 50%;
+    } /* Glow removed */
+    
+    .quote-btn { background: #1a1a1a; color: #fff; border: none; width: 30px; height: 30px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1rem; }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  
+  <div id="bg-image" class="bg-layer"></div>
+  <div id="bg-map" class="bg-layer"></div>
+
+  <div id="canvas-layer">
+    <div class="canvas-tools">
+      <div class="color-swatches">
+        <div class="swatch" style="background: #ef4444; border-color: #ef4444;" onclick="setColor('#ef4444')"></div>
+        <div class="swatch" style="background: #f97316; border-color: #f97316;" onclick="setColor('#f97316')"></div>
+        <div class="swatch" style="background: #eab308; border-color: #eab308;" onclick="setColor('#eab308')"></div>
+        <div class="swatch" style="background: #22c55e; border-color: #22c55e;" onclick="setColor('#22c55e')"></div>
+        <div class="swatch" style="background: #3b82f6; border-color: #3b82f6;" onclick="setColor('#3b82f6')"></div>
+        <div class="swatch" style="background: #ffffff; border-color: #e5e7eb;" onclick="setColor('#ffffff')"></div>
+        <div class="swatch" style="background: #000000; border-color: #000000;" onclick="setColor('#000000')"></div>
+      </div>
+      <button class="save-btn" onclick="completeTask()">Save</button>
+    </div>
+    <canvas id="drawing-pad"></canvas>
+  </div>
+
+  <div id="top-ui-container">
+    <div id="top-card">
+      <div class="top-info">
+        <p id="walking-status">Walking towards</p>
+        <h2 id="ui-title">Rijksmuseum garden</h2>
+        <span id="ui-subtitle">Sheltered sculpture refuge</span>
+      </div>
+      <div class="distance-indicator">
+        <span class="arrow-icon" id="find-my-arrow">
+          <!-- Default Arrow SVG -->
+          <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.23572 24.0077C3.96357 24.7902 4.37724 25.6451 5.15968 25.9172C5.94213 26.1894 6.79706 25.7757 7.06921 24.9933L5.65247 24.5005L4.23572 24.0077ZM15.0027 0.847147C14.6419 0.101431 13.7448 -0.210581 12.9991 0.15025L0.846974 6.03032C0.101257 6.39115 -0.210754 7.28819 0.150076 8.0339C0.510907 8.77962 1.40794 9.09163 2.15366 8.7308L12.9556 3.50407L18.1823 14.306C18.5431 15.0517 19.4402 15.3637 20.1859 15.0029C20.9316 14.642 21.2436 13.745 20.8828 12.9993L15.0027 0.847147ZM5.65247 24.5005L7.06921 24.9933L15.0692 1.99327L13.6525 1.50049L12.2357 1.00771L4.23572 24.0077L5.65247 24.5005Z" fill="#6606FF"/>
+          </svg>
+        </span>
+        <span class="distance-text" id="ui-distance">25 METER</span>
+      </div>
+    </div>
+
+    <div id="paginator">
+      <button onclick="prevStop()">&lsaquo;</button>
+      <div class="page-indicator-content">
+        <span id="page-text">3 / 15</span>
+        <div class="p-dots" id="page-dots"></div>
+      </div>
+      <button onclick="nextStop()">&rsaquo;</button>
+    </div>
+  </div>
+
+  <svg id="pip-character" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="75" cy="85" r="45" fill="#6f7887"/>
+    <path d="M40 90 Q15 95 30 115 Q60 110 70 95 Z" fill="#4d5563"/>
+    <circle cx="85" cy="65" r="18" fill="#ffffff"/>
+    <circle cx="89" cy="63" r="7" fill="#1e293b"/>
+    <circle cx="115" cy="65" r="16" fill="#ffffff"/>
+    <circle cx="117" cy="63" r="6" fill="#1e293b"/>
+    <polygon points="102,74 135,79 105,89" fill="#f59e0b"/>
+    <path d="M55 45 L115 35 L105 25 L65 32 Z" fill="#78350f"/>
+  </svg>
+
+  <button id="map-toggle">
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g clip-path="url(#clip0_215_234)">
+      <path d="M22.6666 8.50016L11.3333 2.8335L1.41663 8.50016V31.1668L11.3333 25.5002M22.6666 8.50016L32.5833 2.8335V25.5002L22.6666 31.1668L11.3333 25.5002M11.3333 25.5002V2.8335M22.6666 31.1668V8.50016" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <defs>
+      <clipPath id="clip0_215_234">
+      <rect width="34" height="34" fill="white"/>
+      </clipPath>
+      </defs>
+    </svg>
+  </button>
+
+  <div id="bottom-card">
+    <div id="collapsible-text">
+      <div class="lyrics-container" id="lyrics-container"></div>
+      <div class="user-input-box" id="user-input-box">
+        <input type="text" placeholder="Type your response here..." onkeypress="handleEnter(event)">
+        <button class="save-btn" onclick="completeTask()">Save</button>
+      </div>
+    </div>
+    
+    <div class="media-controls-wrapper">
+      <div class="player-buttons-container">
+        <div class="player-buttons">
+          <button class="icon-btn" onclick="skipTime(-15)">↺<span style="font-size:0.8rem">15</span></button>
+          <button class="play-btn" id="play-pause-btn" onclick="togglePlay()">▶</button>
+          <button class="icon-btn" onclick="skipTime(15)"><span style="font-size:0.8rem">15</span>↻</button>
+        </div>
+      </div>
+      <div class="player-timeline">
+        <div class="progress-track" id="progress-track" onclick="seekAudio(event)">
+          <div class="progress-fill" id="ui-progress"></div>
+        </div>
+        <button class="quote-btn" onclick="toggleText()">❞</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const stopsData = {
+    3: {
+      id: 3,
+      title: "Rijksmuseum garden",
+      subtitle: "Sheltered sculpture refuge",
+      bgImage: "stop1.png",
+      interaction: "text",
+      taskTime: 36, 
+      audioSrc: "stop3_garden_mp3.mp3",
+      lines: [
+        { time: 0,  text: "Let's slow down for a moment while feeling the sun on your face." },
+        { time: 4,  text: "There are stories hiding here, between the statues and the leaves of the trees." },
+        { time: 9,  text: "Take a gentle breath." },
+        { time: 11, text: "Can you notice a flower nearby, or perhaps the smell of plants and earth?" },
+        { time: 16, text: "Now listen. Perhaps you can hear water flowing from the fountain, footsteps on gravel, or people talking quietly." },
+        { time: 24, text: "If someone is drawing or painting, notice how carefully they’re looking. You can try that too." },
+        { time: 31, text: "Choose one small detail you would usually walk past and focus on it for a brief moment." },
+        { time: 37, text: "These sculptures are part of the museum’s garden." },
+        { time: 42, text: "But the people stopping to look give this place a different rhythm from the street." },
+        { time: 48, text: "Hmm. Maybe the secret of Museumplein is learning to slow down. Although… our next neighbours might disagree." }
+      ]
+    },
+    6: {
+      id: 6,
+      title: "The food stalls",
+      subtitle: "Aromas of Museumplein",
+      bgImage: "stop2.png",
+      interaction: "canvas",
+      taskTime: 25, 
+      audioSrc: "stop6_food_mp3.mp3",
+      lines: [
+        { time: 0,  text: "Oh, this is a serious distraction for a pigeon." },
+        { time: 3,  text: "Take a gentle breath." },
+        { time: 5,  text: "What can you smell today? Something sweet? Coffee?" },
+        { time: 9,  text: "Something cooking?" },
+        { time: 11, text: "You might find stroopwafels, poffertjes, or other snacks around here." },
+        { time: 15, text: "But let your nose investigate before I make promises." },
+        { time: 18, text: "Listen too. Can you separate the sound of cooking from the conversations around you?" },
+        { time: 26, text: "If you already have a snack or drink, take a small taste." },
+        { time: 30, text: "Is it sweet, salty, bitter, warm, or cool?" },
+        { time: 34, text: "If not, think of a familiar flavour that these smells remind you of." },
+        { time: 40, text: "Some people come here for a famous painting. Others need lunch and somewhere to sit." },
+        { time: 46, text: "Both are part of life on the square. I’m beginning to think every visitor brings a different Museumplein experience with them." }
+      ]
+    },
+    14: {
+      id: 14,
+      title: "Women of Ravensbrück",
+      subtitle: "Memorial to remember",
+      bgImage: "stop3.png",
+      interaction: "text",
+      taskTime: 14, 
+      audioSrc: "stop14_memorial_mp3.mp3",
+      lines: [
+        { time: 0,  text: "This memorial commemorates the Dutch victims of Ravensbrück concentration camp and resistance to fascism." },
+        { time: 9,  text: "Notice the upright metal surfaces and the commemorative lettering. Take your time." },
+        { time: 16, text: "As your position changes, you may see light and reflections change across the metal." },
+        { time: 23, text: "You can remain where you are and watch or move a little along the accessible path." },
+        { time: 29, text: "Listen to the surroundings. The wind, footsteps, and everyday activity continue while we stand here remembering." },
+        { time: 39, text: "I don’t think I can reduce this square to one answer anymore." },
+        { time: 45, text: "It holds joyful moments, ordinary routines, and histories we must remember. Each needs space." },
+        { time: 52, text: "When you’re ready, let’s find somewhere to sit." }
+      ]
+    }
+  };
+
+  let currentStopKey = 3;
+  let currentLineIndex = -1;
+  let isPlaying = false;
+  let currentAudio = new Audio();
+  let isTextHidden = false;
+  let taskCompleted = false;
+  
+  let distanceInterval;
+  let wobbleInterval;
+
+  const titleEl = document.getElementById('ui-title');
+  const subtitleEl = document.getElementById('ui-subtitle');
+  const bgImageEl = document.getElementById('bg-image');
+  const lyricsContainer = document.getElementById('lyrics-container');
+  const playPauseBtn = document.getElementById('play-pause-btn');
+  const progressFill = document.getElementById('ui-progress');
+  const pipCharacter = document.getElementById('pip-character');
+  const mapToggleBtn = document.getElementById('map-toggle');
+  const bgMapEl = document.getElementById('bg-map');
+  const collapsibleText = document.getElementById('collapsible-text');
+  const userInputBox = document.getElementById('user-input-box');
+  const canvasLayer = document.getElementById('canvas-layer');
+  let isMapView = false;
+
+  const arrowSvg = `<svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.23572 24.0077C3.96357 24.7902 4.37724 25.6451 5.15968 25.9172C5.94213 26.1894 6.79706 25.7757 7.06921 24.9933L5.65247 24.5005L4.23572 24.0077ZM15.0027 0.847147C14.6419 0.101431 13.7448 -0.210581 12.9991 0.15025L0.846974 6.03032C0.101257 6.39115 -0.210754 7.28819 0.150076 8.0339C0.510907 8.77962 1.40794 9.09163 2.15366 8.7308L12.9556 3.50407L18.1823 14.306C18.5431 15.0517 19.4402 15.3637 20.1859 15.0029C20.9316 14.642 21.2436 13.745 20.8828 12.9993L15.0027 0.847147ZM5.65247 24.5005L7.06921 24.9933L15.0692 1.99327L13.6525 1.50049L12.2357 1.00771L4.23572 24.0077L5.65247 24.5005Z" fill="#6606FF"/></svg>`;
+  const pinSvg = `<svg width="24" height="28" viewBox="0 0 24 24" fill="#6606FF" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
+
+  function animateFindMy() {
+    const statusEl = document.getElementById('walking-status');
+    const distanceEl = document.getElementById('ui-distance');
+    const arrowEl = document.getElementById('find-my-arrow');
+
+    clearInterval(distanceInterval);
+    clearInterval(wobbleInterval);
+
+    // Reset default states
+    let currentDist = 25;
+    statusEl.textContent = 'Walking towards';
+    distanceEl.style.display = 'inline';
+    distanceEl.textContent = currentDist + ' METER';
+    arrowEl.innerHTML = arrowSvg;
+    arrowEl.style.transform = 'rotate(0deg)';
+
+    wobbleInterval = setInterval(() => {
+       const angle = (Math.random() * 40) - 20; 
+       arrowEl.style.transform = `rotate(${angle}deg)`;
+    }, 350);
+
+    distanceInterval = setInterval(() => {
+      currentDist -= Math.floor(Math.random() * 2) + 1;
+      if (currentDist <= 0) {
+         currentDist = 0;
+         clearInterval(distanceInterval);
+         clearInterval(wobbleInterval);
+         arrowEl.style.transform = 'rotate(0deg)';
+         
+         // Pin effect trigger!
+         statusEl.textContent = 'Standing at';
+         distanceEl.style.display = 'none';
+         arrowEl.innerHTML = pinSvg;
+      } else {
+         distanceEl.textContent = currentDist + ' METER';
+      }
+    }, 300);
+  }
+
+  function loadStop(key) {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+    isPlaying = false;
+    taskCompleted = false;
+    playPauseBtn.innerHTML = '▶';
+    currentStopKey = key;
+    currentLineIndex = -1;
+    const stop = stopsData[key];
+
+    titleEl.textContent = stop.title;
+    subtitleEl.textContent = stop.subtitle;
+    bgImageEl.style.backgroundImage = `url('${stop.bgImage}')`;
+    progressFill.style.width = '0%';
+
+    document.getElementById('page-text').textContent = `${key} / 15`;
+    let dotsHTML = '';
+    for(let i=1; i<=15; i++) {
+        if(i === key) dotsHTML += '<span class="dot active-dot"></span>';
+        else dotsHTML += '<span class="dot"></span>';
+    }
+    document.getElementById('page-dots').innerHTML = dotsHTML;
+
+    canvasLayer.classList.remove('active');
+    userInputBox.classList.remove('active');
+
+    currentAudio.src = stop.audioSrc;
+    
+    lyricsContainer.innerHTML = '';
+    stop.lines.forEach((lineData) => {
+      const div = document.createElement('div');
+      div.className = 'lyric-line';
+      div.textContent = lineData.text;
+      div.onclick = () => jumpToTime(lineData.time);
+      lyricsContainer.appendChild(div);
+    });
+
+    if (isMapView) toggleMap();
+    if (isTextHidden) toggleText();
+    
+    highlightLine(0);
+    animateFindMy();
+    updateOverlayPositions();
+
+    if (key === 6 || key === 14) {
+      setTimeout(() => {
+        currentAudio.play().then(() => {
+          isPlaying = true;
+          playPauseBtn.innerHTML = '⏸';
+        }).catch(e => console.log("Auto-play prevented:", e));
+      }, 300);
+    }
+  }
+
+  function nextStop() {
+    if (currentStopKey === 3) loadStop(6);
+    else if (currentStopKey === 6) loadStop(14);
+    else loadStop(3);
+  }
+
+  function prevStop() {
+    if (currentStopKey === 14) loadStop(6);
+    else if (currentStopKey === 6) loadStop(3);
+    else loadStop(14);
+  }
+
+  function updateOverlayPositions() {
+    // dynamically setting the position so it's always right above the cards
+    if (isTextHidden) {
+      pipCharacter.style.bottom = "140px";
+      mapToggleBtn.style.bottom = "140px";
+    } else {
+      pipCharacter.style.bottom = "calc(32vh + 140px)";
+      mapToggleBtn.style.bottom = "calc(32vh + 140px)";
+    }
+  }
+
+  function toggleText() {
+    isTextHidden = !isTextHidden;
+    if (isTextHidden) {
+      collapsibleText.classList.add('hidden');
+    } else {
+      collapsibleText.classList.remove('hidden');
+    }
+    updateOverlayPositions();
+  }
+
+  function togglePlay() {
+    if (isPlaying) {
+      currentAudio.pause();
+      isPlaying = false;
+      playPauseBtn.innerHTML = '▶';
+    } else {
+      currentAudio.play().then(() => {
+        isPlaying = true;
+        playPauseBtn.innerHTML = '⏸';
+      }).catch(e => console.log("Play prevented:", e));
+    }
+  }
+
+  currentAudio.ontimeupdate = () => {
+    if (!currentAudio.duration) return;
+    
+    const stop = stopsData[currentStopKey];
+    if (!taskCompleted && currentAudio.currentTime >= stop.taskTime) {
+      currentAudio.pause();
+      isPlaying = false;
+      playPauseBtn.innerHTML = '▶';
+      showTask(stop);
+      taskCompleted = true;
+    }
+
+    const progressPercent = (currentAudio.currentTime / currentAudio.duration) * 100;
+    progressFill.style.width = progressPercent + '%';
+    
+    let activeIdx = 0;
+    for (let i = 0; i < stop.lines.length; i++) {
+      if (currentAudio.currentTime >= stop.lines[i].time) activeIdx = i;
+      else break;
+    }
+    
+    if (activeIdx !== currentLineIndex) highlightLine(activeIdx);
+  };
+
+  currentAudio.onended = () => {
+    isPlaying = false;
+    playPauseBtn.innerHTML = '▶';
+  };
+
+  function showTask(stop) {
+    if (stop.interaction === 'canvas') {
+      canvasLayer.classList.add('active');
+      document.getElementById('top-ui-container').style.opacity = '0';
+      document.getElementById('top-ui-container').style.pointerEvents = 'none';
+      document.getElementById('map-toggle').style.opacity = '0';
+      document.getElementById('map-toggle').style.pointerEvents = 'none';
+      if (!isTextHidden) toggleText();
+      resizeCanvas();
+    } else {
+      userInputBox.classList.add('active');
+      if (isTextHidden) toggleText();
+      lyricsContainer.scrollTo({ top: lyricsContainer.scrollHeight, behavior: 'smooth' });
+    }
+  }
+
+  function completeTask() {
+    canvasLayer.classList.remove('active');
+    userInputBox.classList.remove('active');
+    document.getElementById('top-ui-container').style.opacity = '1';
+    document.getElementById('top-ui-container').style.pointerEvents = 'auto';
+    document.getElementById('map-toggle').style.opacity = '1';
+    document.getElementById('map-toggle').style.pointerEvents = 'auto';
+    
+    if (isTextHidden) toggleText();
+    togglePlay();
+  }
+
+  function handleEnter(e) {
+    if(e.key === 'Enter') {
+      e.target.value = ''; 
+      completeTask();
+    }
+  }
+
+  function highlightLine(index) {
+    currentLineIndex = index;
+    const lines = lyricsContainer.getElementsByClassName('lyric-line');
+    for (let i = 0; i < lines.length; i++) {
+      if (i === index) {
+        lines[i].classList.add('active');
+        const scrollPos = lines[i].offsetTop - (lyricsContainer.clientHeight / 2) + (lines[i].clientHeight / 2);
+        lyricsContainer.scrollTo({ top: scrollPos, behavior: 'smooth' });
+      } else {
+        lines[i].classList.remove('active');
+      }
+    }
+  }
+
+  function jumpToTime(seconds) {
+    if (currentAudio) {
+      currentAudio.currentTime = seconds;
+      if (seconds > stopsData[currentStopKey].taskTime) taskCompleted = true;
+      if (!isPlaying) togglePlay();
+    }
+  }
+
+  function skipTime(seconds) {
+    if (currentAudio.duration) {
+      currentAudio.currentTime = Math.min(Math.max(currentAudio.currentTime + seconds, 0), currentAudio.duration);
+    }
+  }
+
+  const track = document.getElementById('progress-track');
+  let isDraggingAudio = false;
+
+  function updateAudioDrag(clientX) {
+    const rect = track.getBoundingClientRect();
+    let clickX = clientX - rect.left;
+    clickX = Math.max(0, Math.min(clickX, rect.width));
+    if (currentAudio.duration) {
+      currentAudio.currentTime = (clickX / rect.width) * currentAudio.duration;
+    }
+  }
+
+  track.addEventListener('mousedown', (e) => { isDraggingAudio = true; updateAudioDrag(e.clientX); });
+  window.addEventListener('mousemove', (e) => { if (isDraggingAudio) updateAudioDrag(e.clientX); });
+  window.addEventListener('mouseup', () => { isDraggingAudio = false; });
+  track.addEventListener('touchstart', (e) => { isDraggingAudio = true; updateAudioDrag(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('touchmove', (e) => { if (isDraggingAudio) updateAudioDrag(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('touchend', () => { isDraggingAudio = false; });
+
+  function seekAudio(event) {
+    const rect = track.getBoundingClientRect();
+    if (currentAudio.duration) {
+      currentAudio.currentTime = ((event.clientX - rect.left) / rect.width) * currentAudio.duration;
+    }
+  }
+
+  function toggleMap() {
+    isMapView = !isMapView;
+    if (isMapView) {
+      bgMapEl.style.opacity = '1'; bgMapEl.style.pointerEvents = 'auto';
+      mapToggleBtn.style.backgroundColor = 'white'; mapToggleBtn.style.color = 'var(--purple)';
+    } else {
+      bgMapEl.style.opacity = '0'; bgMapEl.style.pointerEvents = 'none';
+      mapToggleBtn.style.backgroundColor = 'var(--purple)'; mapToggleBtn.style.color = 'white';
+    }
+  }
+  mapToggleBtn.addEventListener('click', toggleMap);
+
+  const canvas = document.getElementById('drawing-pad');
+  const ctx = canvas.getContext('2d');
+  let isDrawing = false;
+
+  function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000000';
+  }
+  window.addEventListener('resize', resizeCanvas);
+  function setColor(color) { ctx.strokeStyle = color; }
+
+  canvas.addEventListener('mousedown', startPos);
+  canvas.addEventListener('mouseup', endPos);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); const t = e.touches[0]; startPos(new MouseEvent("mousedown", { clientX: t.clientX, clientY: t.clientY })); }, { passive: false });
+  canvas.addEventListener('touchend', (e) => { e.preventDefault(); endPos(); }, { passive: false });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); const t = e.touches[0]; draw(new MouseEvent("mousemove", { clientX: t.clientX, clientY: t.clientY })); }, { passive: false });
+
+  function startPos(e) { isDrawing = true; draw(e); }
+  function endPos() { isDrawing = false; ctx.beginPath(); }
+  function draw(e) {
+    if (!isDrawing) return;
+    const rect = canvas.getBoundingClientRect();
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke(); ctx.beginPath(); ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+  }
+
+  loadStop(3);
+</script>
+</body>
+</html>
