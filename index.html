@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Museumplein Podwalk Prototype</title>
+  <title>Museumplein Podwalk</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --purple: #6200ea;
-      --text-dark: #1a1a1a;
+      --purple: #6606FF;
+      --light-green: #e0f2e9;
+      --text-dark: #1D1B20;
       --text-muted: #666;
-      --bg-light: #f8f9fa;
       --ui-radius: 16px;
     }
 
@@ -44,36 +44,43 @@
       flex-direction: column;
     }
 
+    /* Media Container */
+    #media-area {
+      position: relative;
+      flex-grow: 1;
+      width: 100%;
+      overflow: hidden;
+    }
+
     .bg-layer {
       position: absolute;
       inset: 0;
       background-size: cover;
       background-position: center;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.4s ease, background-image 0.4s ease;
       z-index: 1;
     }
 
     #bg-map { 
-      background-image: url('map.png'); 
+      background-image: url('map.jpg'); 
       opacity: 0; 
       pointer-events: none;
     }
 
+    /* Top UI (Header + Paginator) */
     #top-ui-container {
       position: absolute;
-      top: 40px;
+      top: 20px;
       left: 16px;
       right: 16px;
       z-index: 10;
+      transition: opacity 0.4s ease;
       display: flex;
       flex-direction: column;
-      align-items: center;
       gap: 12px;
-      transition: opacity 0.4s ease, transform 0.4s ease;
     }
 
     #top-card {
-      width: 100%;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
       border-radius: var(--ui-radius);
@@ -81,293 +88,455 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
 
     .top-info p { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
     .top-info h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--text-dark); margin-bottom: 2px; }
     .top-info span { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
     
-    .distance-indicator { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
-    .arrow-icon { 
-      margin-bottom: 2px; 
-      display: inline-flex; 
-      align-items: center;
-      justify-content: center;
-      transform-origin: center;
-      transition: transform 0.1s ease-out;
-    }
-    .distance-text { font-size: 0.65rem; font-weight: 700; color: var(--text-dark); }
-
-    #paginator {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 6px 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      white-space: nowrap; /* Fixes wrap over 3 lines */
+    .distance-indicator { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      min-width: 60px;
     }
     
-    #paginator button {
-      background: transparent;
-      border: none;
-      font-size: 1.4rem;
-      color: var(--text-dark);
-      cursor: pointer;
-      font-weight: bold;
+    .arrow-icon-container {
+      height: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 4px;
+      margin-bottom: 4px;
     }
 
-    .page-indicator-content {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-dark);
+    .arrow-svg { transition: transform 0.8s ease-out; width: 18px; height: auto; }
+    .wobble { animation: radarWobble 2.5s infinite ease-in-out; }
+    
+    @keyframes radarWobble {
+      0% { transform: rotate(-15deg); }
+      50% { transform: rotate(15deg); }
+      100% { transform: rotate(-15deg); }
+    }
+
+    .distance-text { font-size: 0.65rem; font-weight: 700; color: var(--purple); }
+
+    /* Paginator */
+    .paginator {
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 10px;
-      white-space: nowrap;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      padding: 6px 16px;
+      border-radius: 20px;
+      align-self: center;
     }
 
-    .p-dots { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
-    .dot { width: 4px; height: 4px; background-color: #d1d5db; border-radius: 50%; display: inline-block; }
-    .dot.active-dot { width: 14px; background-color: var(--purple); border-radius: 4px; }
+    .icon-btn {
+      background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
+    }
+    
+    .icon-btn svg {
+      width: 20px;
+      height: auto;
+    }
 
+    #paginator-dots-container {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .page-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #cbd5e1;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .page-dot.active {
+      width: 16px;
+      background-color: var(--purple);
+      border-radius: 4px;
+    }
+
+    /* Teken Canvas */
+    #canvas-layer {
+      position: absolute;
+      inset: 0;
+      background: white;
+      z-index: 5;
+      display: none;
+      flex-direction: column;
+    }
+
+    #canvas-layer.active { display: flex; }
+
+    .canvas-tools {
+      position: absolute;
+      top: 40px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .color-swatches { display: flex; gap: 8px; }
+    .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #e5e7eb; cursor: pointer; }
+    
+    .save-btn { 
+      background: var(--purple); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; cursor: pointer;
+    }
+
+    canvas { flex-grow: 1; width: 100%; touch-action: none; cursor: crosshair; }
+
+    /* Pip & Map Toggle */
     #pip-character {
       position: absolute;
+      bottom: 25px; 
       left: -10px;
       width: 130px;
-      z-index: 50; /* Always on top */
+      z-index: 10;
       pointer-events: none;
-      transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
     #map-toggle {
       position: absolute;
+      bottom: 25px; 
       right: 16px;
       width: 46px;
       height: 46px;
       background-color: var(--purple);
       border-radius: 50%;
-      z-index: 50; /* Always on top */
+      z-index: 11;
       display: flex;
       justify-content: center;
       align-items: center;
       color: white;
       border: none;
       cursor: pointer;
-      transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+      transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
     }
 
     #map-toggle svg {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: auto;
     }
 
-    #canvas-layer { position: absolute; inset: 0; background: white; z-index: 5; display: none; flex-direction: column; }
-    #canvas-layer.active { display: flex; }
-    .canvas-tools { position: absolute; top: 40px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-    .color-swatches { display: flex; gap: 6px; }
-    .swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #000; cursor: pointer; }
-    .save-btn { background: var(--purple); color: white; border: none; padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
-    canvas { flex-grow: 1; width: 100%; touch-action: none; cursor: crosshair; }
-
+    /* Bottom Card (Lyrics & Player) */
     #bottom-card {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      position: relative;
+      width: 100%;
       background: #fff;
       border-top-left-radius: 24px;
       border-top-right-radius: 24px;
-      padding: 0;
       z-index: 20;
-      box-shadow: 0 -4px 30px rgba(0,0,0,0.15);
       display: flex;
       flex-direction: column;
+      flex-shrink: 0; 
     }
 
     #collapsible-text {
-      padding: 24px 20px 0;
+      padding: 0 20px;
       display: flex;
       flex-direction: column;
-      height: 32vh;
-      transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.4s;
+      height: 35vh; 
+      transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
       overflow: hidden;
-      background: #fff;
     }
-    #collapsible-text.hidden { height: 0; padding-top: 0; }
+
+    #collapsible-text.hidden { height: 0; }
+    
+    .lyrics-wrapper {
+      position: relative;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin-top: 24px;
+    }
 
     .lyrics-container {
       position: relative; 
-      font-family: 'Playfair Display', serif; /* Consistent with title */
-      font-size: 1.1rem;
-      line-height: 1.6;
-      color: #9ca3af; 
       overflow-y: auto;
       flex-grow: 1;
-      padding-top: 10px;
       padding-right: 4px;
-      padding-bottom: 20px;
+      padding-bottom: 30px;
+      padding-top: 10px;
       overscroll-behavior: contain;
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
-      mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
     }
-    .lyrics-container::-webkit-scrollbar { width: 0px; background: transparent; } /* Removes gray track bar */
+
+    .lyrics-container::-webkit-scrollbar { width: 0px; }
 
     .lyric-line {
-      font-family: 'Playfair Display', serif;
+      font-family: 'Playfair Display', serif; /* Hersteld */
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: #9ca3af; /* Standaard grijze rustkleur */
       margin-bottom: 12px;
       transition: color 0.3s ease, transform 0.3s ease;
       cursor: pointer;
       transform-origin: left center;
     }
-    .lyric-line.active { color: var(--purple); font-weight: 600; transform: scale(1.02); }
 
-    .user-input-box { margin-top: 10px; margin-bottom: 16px; display: none; flex-shrink: 0; }
-    .user-input-box.active { display: flex; gap: 8px; }
-    .user-input-box input {
-      font-family: 'Playfair Display', serif;
-      flex-grow: 1; padding: 14px 16px; border: 1px solid #e5e7eb; border-radius: 12px; font-size: 1rem; background: #fff; outline: none; transition: border-color 0.2s;
+    .lyric-line.active { 
+      color: var(--text-dark); /* Donkere actieve kleur */
+      font-weight: 700; 
+      transform: scale(1.02); 
     }
-    .user-input-box input:focus { border-color: var(--purple); }
-    .user-input-box .save-btn { margin: 0; padding: 0 20px; }
 
+    .user-input-box {
+      margin-bottom: 16px;
+      display: none;
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    .user-input-box.active { display: flex; }
+    
+    .user-input-box input {
+      flex-grow: 1;
+      padding: 12px 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      background: #f9fafb;
+      outline: none;
+    }
+
+    /* Media Controls */
     .media-controls-wrapper { padding: 16px 20px 24px; background: #fff; }
-    .player-buttons-container { display: flex; justify-content: center; margin-bottom: 16px; }
-    .player-buttons { display: flex; justify-content: center; align-items: center; gap: 20px; background-color: #e6f4ea; padding: 6px 24px; border-radius: 40px; }
-    .icon-btn { background: none; border: none; color: #1a1a1a; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+    /* Achtergrond pil voor de knoppen */
+    .player-buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin: 0 auto 16px auto;
+      background: var(--light-green); /* Doorlopende groene achtergrond */
+      border-radius: 40px;
+      padding: 6px 12px;
+      width: max-content;
+    }
+
+    .skip-btn {
+      background: transparent;
+      border: none;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .skip-btn svg {
+      width: 24px; /* Fix voor enorme 15s iconen */
+      height: auto;
+    }
     
     .play-btn { 
-      background: var(--purple); color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; border: none; cursor: pointer;
-    } /* Glow removed */
+      background: var(--purple); 
+      width: 52px; 
+      height: 52px; 
+      border-radius: 50%; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      border: none;
+      cursor: pointer;
+    }
 
-    .player-timeline { display: flex; align-items: center; gap: 16px; }
+    .play-btn svg {
+      width: 14px; /* Play/pause sizing */
+      height: auto;
+    }
+
+    .player-timeline { display: flex; align-items: center; gap: 14px; }
+    
     .progress-track { flex-grow: 1; height: 6px; background: #e5e7eb; border-radius: 3px; position: relative; cursor: pointer; }
     .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--purple); border-radius: 3px; pointer-events: none;}
-    .progress-fill::after { 
-      content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background-color: var(--purple); border-radius: 50%;
-    } /* Glow removed */
+    .progress-handle { width: 14px; height: 14px; background: var(--purple); border-radius: 50%; position: absolute; right: -7px; top: -4px; pointer-events: auto; }
     
-    .quote-btn { background: #1a1a1a; color: #fff; border: none; width: 30px; height: 30px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1rem; }
+    /* "Aa" Knop stijl */
+    .quote-btn { 
+      background: var(--light-green); /* Zelfde lichtgroen als player-buttons */
+      border: none; 
+      width: 38px; 
+      height: 38px; 
+      border-radius: 8px; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      cursor: pointer; 
+    }
+
+    .quote-btn svg {
+      width: 20px; /* Fix voor enorme tekst-verberg knop */
+      height: auto;
+    }
   </style>
 </head>
 <body>
 
 <div id="app-container">
   
-  <div id="bg-image" class="bg-layer"></div>
-  <div id="bg-map" class="bg-layer"></div>
+  <div id="media-area">
+    <div id="bg-image" class="bg-layer"></div>
+    <div id="bg-map" class="bg-layer"></div>
 
-  <div id="canvas-layer">
-    <div class="canvas-tools">
-      <div class="color-swatches">
-        <div class="swatch" style="background: #ef4444; border-color: #ef4444;" onclick="setColor('#ef4444')"></div>
-        <div class="swatch" style="background: #f97316; border-color: #f97316;" onclick="setColor('#f97316')"></div>
-        <div class="swatch" style="background: #eab308; border-color: #eab308;" onclick="setColor('#eab308')"></div>
-        <div class="swatch" style="background: #22c55e; border-color: #22c55e;" onclick="setColor('#22c55e')"></div>
-        <div class="swatch" style="background: #3b82f6; border-color: #3b82f6;" onclick="setColor('#3b82f6')"></div>
-        <div class="swatch" style="background: #ffffff; border-color: #e5e7eb;" onclick="setColor('#ffffff')"></div>
-        <div class="swatch" style="background: #000000; border-color: #000000;" onclick="setColor('#000000')"></div>
+    <div id="canvas-layer">
+      <div class="canvas-tools">
+        <div class="color-swatches">
+          <div class="swatch" style="background: #ef4444;" onclick="setColor('#ef4444')"></div>
+          <div class="swatch" style="background: #eab308;" onclick="setColor('#eab308')"></div>
+          <div class="swatch" style="background: #3b82f6;" onclick="setColor('#3b82f6')"></div>
+          <div class="swatch" style="background: #ffffff;" onclick="setColor('#ffffff')"></div>
+          <div class="swatch" style="background: #000000; border-color: #000000;" onclick="setColor('#000000')"></div>
+        </div>
+        <button class="save-btn" onclick="completeTask()">Save</button>
       </div>
-      <button class="save-btn" onclick="completeTask()">Save</button>
+      <canvas id="drawing-pad"></canvas>
     </div>
-    <canvas id="drawing-pad"></canvas>
-  </div>
 
-  <div id="top-ui-container">
-    <div id="top-card">
-      <div class="top-info">
-        <p id="walking-status">Walking towards</p>
-        <h2 id="ui-title">Rijksmuseum garden</h2>
-        <span id="ui-subtitle">Sheltered sculpture refuge</span>
+    <div id="top-ui-container">
+      <div id="top-card">
+        <div class="top-info">
+          <p id="ui-status">Walking towards</p>
+          <h2 id="ui-title">Rijksmuseum garden</h2>
+          <span id="ui-subtitle">Sheltered sculpture refuge</span>
+        </div>
+        <div class="distance-indicator">
+          <div class="arrow-icon-container" id="arrow-container">
+            <!-- Standaard Pijl SVG -->
+            <svg class="arrow-svg wobble" id="arrow-svg" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4.23572 24.0077C3.96357 24.7902 4.37724 25.6451 5.15968 25.9172C5.94213 26.1894 6.79706 25.7757 7.06921 24.9933L5.65247 24.5005L4.23572 24.0077ZM15.0027 0.847147C14.6419 0.101431 13.7448 -0.210581 12.9991 0.15025L0.846974 6.03032C0.101257 6.39115 -0.210754 7.28819 0.150076 8.0339C0.510907 8.77962 1.40794 9.09163 2.15366 8.7308L12.9556 3.50407L18.1823 14.306C18.5431 15.0517 19.4402 15.3637 20.1859 15.0029C20.9316 14.642 21.2436 13.745 20.8828 12.9993L15.0027 0.847147ZM5.65247 24.5005L7.06921 24.9933L15.0692 1.99327L13.6525 1.50049L12.2357 1.00771L4.23572 24.0077L5.65247 24.5005Z" fill="#6606FF"/>
+            </svg>
+          </div>
+          <span class="distance-text" id="ui-distance">25 METER</span>
+        </div>
       </div>
-      <div class="distance-indicator">
-        <span class="arrow-icon" id="find-my-arrow">
-          <!-- Default Arrow SVG -->
-          <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4.23572 24.0077C3.96357 24.7902 4.37724 25.6451 5.15968 25.9172C5.94213 26.1894 6.79706 25.7757 7.06921 24.9933L5.65247 24.5005L4.23572 24.0077ZM15.0027 0.847147C14.6419 0.101431 13.7448 -0.210581 12.9991 0.15025L0.846974 6.03032C0.101257 6.39115 -0.210754 7.28819 0.150076 8.0339C0.510907 8.77962 1.40794 9.09163 2.15366 8.7308L12.9556 3.50407L18.1823 14.306C18.5431 15.0517 19.4402 15.3637 20.1859 15.0029C20.9316 14.642 21.2436 13.745 20.8828 12.9993L15.0027 0.847147ZM5.65247 24.5005L7.06921 24.9933L15.0692 1.99327L13.6525 1.50049L12.2357 1.00771L4.23572 24.0077L5.65247 24.5005Z" fill="#6606FF"/>
+      
+      <!-- Paginator (Onder de header) -->
+      <div class="paginator">
+        <button class="icon-btn" onclick="prevStop()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+            <path d="M5.5 18V6H7.5V18H5.5ZM18.5 18L9.5 12L18.5 6V18Z" fill="#1D1B20"/>
           </svg>
-        </span>
-        <span class="distance-text" id="ui-distance">25 METER</span>
+        </button>
+        
+        <div id="paginator-dots-container">
+          <!-- JS vult dit met 15 stipjes -->
+        </div>
+
+        <button class="icon-btn" onclick="nextStop()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+            <path d="M16.5 18V6H18.5V18H16.5ZM5.5 18V6L14.5 12L5.5 18Z" fill="#1D1B20"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <div id="paginator">
-      <button onclick="prevStop()">&lsaquo;</button>
-      <div class="page-indicator-content">
-        <span id="page-text">3 / 15</span>
-        <div class="p-dots" id="page-dots"></div>
-      </div>
-      <button onclick="nextStop()">&rsaquo;</button>
-    </div>
-  </div>
-
-  <svg id="pip-character" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="75" cy="85" r="45" fill="#6f7887"/>
-    <path d="M40 90 Q15 95 30 115 Q60 110 70 95 Z" fill="#4d5563"/>
-    <circle cx="85" cy="65" r="18" fill="#ffffff"/>
-    <circle cx="89" cy="63" r="7" fill="#1e293b"/>
-    <circle cx="115" cy="65" r="16" fill="#ffffff"/>
-    <circle cx="117" cy="63" r="6" fill="#1e293b"/>
-    <polygon points="102,74 135,79 105,89" fill="#f59e0b"/>
-    <path d="M55 45 L115 35 L105 25 L65 32 Z" fill="#78350f"/>
-  </svg>
-
-  <button id="map-toggle">
-    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <g clip-path="url(#clip0_215_234)">
-      <path d="M22.6666 8.50016L11.3333 2.8335L1.41663 8.50016V31.1668L11.3333 25.5002M22.6666 8.50016L32.5833 2.8335V25.5002L22.6666 31.1668L11.3333 25.5002M11.3333 25.5002V2.8335M22.6666 31.1668V8.50016" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      </g>
-      <defs>
-      <clipPath id="clip0_215_234">
-      <rect width="34" height="34" fill="white"/>
-      </clipPath>
-      </defs>
+    <svg id="pip-character" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="75" cy="85" r="45" fill="#6f7887"/>
+      <path d="M40 90 Q15 95 30 115 Q60 110 70 95 Z" fill="#4d5563"/>
+      <circle cx="85" cy="65" r="18" fill="#ffffff"/>
+      <circle cx="89" cy="63" r="7" fill="#1e293b"/>
+      <circle cx="115" cy="65" r="16" fill="#ffffff"/>
+      <circle cx="117" cy="63" r="6" fill="#1e293b"/>
+      <polygon points="102,74 135,79 105,89" fill="#f59e0b"/>
+      <path d="M55 45 L115 35 L105 25 L65 32 Z" fill="#78350f"/>
     </svg>
-  </button>
+
+    <button id="map-toggle">
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clip-path="url(#clip0_215_234)">
+        <path d="M22.6666 8.50016L11.3333 2.8335L1.41663 8.50016V31.1668L11.3333 25.5002M22.6666 8.50016L32.5833 2.8335V25.5002L22.6666 31.1668L11.3333 25.5002M11.3333 25.5002V2.8335M22.6666 31.1668V8.50016" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <defs>
+        <clipPath id="clip0_215_234">
+        <rect width="34" height="34" fill="white"/>
+        </clipPath>
+        </defs>
+      </svg>
+    </button>
+  </div>
 
   <div id="bottom-card">
     <div id="collapsible-text">
-      <div class="lyrics-container" id="lyrics-container"></div>
+      <div class="lyrics-wrapper">
+        <div class="lyrics-container" id="lyrics-container"></div>
+      </div>
       <div class="user-input-box" id="user-input-box">
-        <input type="text" placeholder="Type your response here..." onkeypress="handleEnter(event)">
+        <input type="text" placeholder="Type your observation here...">
         <button class="save-btn" onclick="completeTask()">Save</button>
       </div>
     </div>
     
     <div class="media-controls-wrapper">
-      <div class="player-buttons-container">
-        <div class="player-buttons">
-          <button class="icon-btn" onclick="skipTime(-15)">↺<span style="font-size:0.8rem">15</span></button>
-          <button class="play-btn" id="play-pause-btn" onclick="togglePlay()">▶</button>
-          <button class="icon-btn" onclick="skipTime(15)"><span style="font-size:0.8rem">15</span>↻</button>
-        </div>
+      <div class="player-buttons">
+        
+        <!-- Terug 15s -->
+        <button class="skip-btn" onclick="skipTime(-15)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 47" fill="none">
+            <path d="M13.6465 4.35449C17.8239 2.63984 22.4337 2.25056 26.8486 3.24805C31.4759 4.2936 35.6414 6.80689 38.7236 10.4131C41.8059 14.0194 43.64 18.526 43.9521 23.2598C44.2641 27.9934 43.0381 32.702 40.4561 36.6816C37.8739 40.6612 34.0739 43.6997 29.624 45.3438C25.1742 46.9877 20.3118 47.1496 15.7627 45.8047C11.2135 44.4596 7.22042 41.6793 4.37988 37.8799C1.53943 34.0803 0.00283958 29.4636 0 24.7197V22.8789C0 21.7743 0.895437 20.8789 2 20.8789C3.10456 20.8789 4 21.7743 4 22.8789V24.7188C4.00263 28.5995 5.25941 32.3761 7.58301 35.4844C9.90709 38.5931 13.1743 40.8682 16.8965 41.9688C20.6186 43.0692 24.5974 42.9369 28.2383 41.5918C31.8791 40.2467 34.988 37.7599 37.1006 34.5039C39.213 31.2478 40.2162 27.3953 39.9609 23.5225C39.7055 19.6495 38.2044 15.9623 35.6826 13.0117C33.1607 10.0613 29.7527 8.00481 25.9668 7.14941C22.5762 6.38338 19.046 6.61962 15.7988 7.81152L18.7197 12.5039L4 12.9932L10.9365 0L13.6465 4.35449ZM30.6875 20.959H24.6592L24.4854 23.3438C24.8083 23.2017 25.1377 23.0855 25.4736 22.9951C25.8096 22.9047 26.1973 22.8594 26.6367 22.8594C27.4637 22.8594 28.226 23.0207 28.9238 23.3438C29.6346 23.6539 30.2034 24.1322 30.6299 24.7783C31.0691 25.4115 31.289 26.206 31.2891 27.1621C31.2891 28.1571 31.056 29.0166 30.5908 29.7402C30.1385 30.4639 29.4989 31.0195 28.6719 31.4072C27.8577 31.7949 26.9012 31.9893 25.8027 31.9893C24.6399 31.9892 23.6387 31.8014 22.7988 31.4268C21.9718 31.0391 21.2086 30.5221 20.5107 29.876L22.4492 27.6084C22.992 28.0736 23.5288 28.4349 24.0586 28.6934C24.6014 28.9518 25.1702 29.0811 25.7646 29.0811C26.4494 29.081 26.9854 28.9131 27.373 28.5771C27.7736 28.2283 27.9746 27.7763 27.9746 27.2207C27.9746 26.8459 27.8774 26.5224 27.6836 26.251C27.4898 25.9797 27.2246 25.773 26.8887 25.6309C26.5527 25.4887 26.1649 25.418 25.7256 25.418C25.3251 25.418 24.9504 25.4756 24.6016 25.5918C24.2526 25.7081 23.9159 25.8572 23.5928 26.0381L21.5381 24.9141L21.9648 18.1289H30.7266L30.6875 20.959ZM18.4551 31.7178H15.1016V21.2109H12.252V18.0322H18.4551V31.7178Z" fill="black"/>
+          </svg>
+        </button>
+        
+        <!-- Play / Pauze -->
+        <button class="play-btn" id="play-pause-btn" onclick="togglePlay()">
+          <!-- Play Icon -->
+          <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 11 14" fill="none">
+            <path d="M0 14V0L11 7L0 14Z" fill="white"/>
+          </svg>
+          <!-- Pause Icon -->
+          <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 14" fill="none" style="display: none;">
+            <path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="white"/>
+          </svg>
+        </button>
+
+        <!-- 15s naar voren -->
+        <button class="skip-btn" onclick="skipTime(15)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 47" fill="none">
+            <path d="M39.9998 12.9932L25.2791 12.5039L28.2 7.81152C24.9531 6.61985 21.4233 6.38345 18.033 7.14941C14.2471 8.0048 10.8391 10.0613 8.31718 13.0117C5.7954 15.9623 4.2943 19.6495 4.03886 23.5225C3.78359 27.3954 4.78676 31.2478 6.89922 34.5039C9.01182 37.7599 12.1208 40.2467 15.7615 41.5918C19.4024 42.9368 23.3812 43.0692 27.1033 41.9688C30.8255 40.8682 34.0927 38.5931 36.4168 35.4844C38.7404 32.3761 39.9972 28.5995 39.9998 24.7188V22.8789C39.9998 21.7743 40.8952 20.8789 41.9998 20.8789C43.1043 20.879 43.9998 21.7744 43.9998 22.8789V24.7197C43.997 29.4636 42.4604 34.0803 39.6199 37.8799C36.7794 41.6793 32.7863 44.4596 28.2371 45.8047C23.688 47.1496 18.8256 46.9876 14.3758 45.3438C9.9259 43.6997 6.12587 40.6612 3.54375 36.6816C0.961749 32.702 -0.264325 27.9934 0.0476532 23.2598C0.359796 18.526 2.1939 14.0194 5.27617 10.4131C8.35846 6.80687 12.5238 4.29359 17.1512 3.24805C21.5657 2.25066 26.1752 2.63923 30.3523 4.35352L33.0633 0L39.9998 12.9932ZM30.6873 20.959H24.659L24.4842 23.3438C24.8073 23.2016 25.1374 23.0856 25.4734 22.9951C25.8094 22.9047 26.1972 22.8594 26.6365 22.8594C27.4635 22.8594 28.2259 23.0207 28.9236 23.3438C29.6344 23.6539 30.2032 24.1322 30.6297 24.7783C31.0689 25.4114 31.2888 26.2061 31.2889 27.1621C31.2889 28.1571 31.0558 29.0166 30.5906 29.7402C30.1384 30.4639 29.4986 31.0195 28.6717 31.4072C27.8575 31.7949 26.901 31.9893 25.8025 31.9893C24.6395 31.9892 23.6376 31.8015 22.7977 31.4268C21.9707 31.0391 21.2083 30.522 20.5105 29.876L22.449 27.6084C22.9918 28.0736 23.5286 28.4349 24.0584 28.6934C24.601 28.9517 25.1692 29.081 25.7635 29.0811C26.4484 29.0811 26.9852 28.9131 27.3728 28.5771C27.7733 28.2283 27.9734 27.7762 27.9734 27.2207C27.9734 26.8459 27.8772 26.5224 27.6834 26.251C27.4896 25.9797 27.2244 25.773 26.8885 25.6309C26.5525 25.4887 26.1647 25.418 25.7254 25.418C25.3248 25.418 24.9493 25.4755 24.6004 25.5918C24.2516 25.7081 23.9156 25.8572 23.5926 26.0381L21.5379 24.9141L21.9646 18.1289H30.7264L30.6873 20.959ZM18.4549 31.7178H15.1014V21.2109H12.2518V18.0322H18.4549V31.7178Z" fill="black"/>
+          </svg>
+        </button>
+
       </div>
+
       <div class="player-timeline">
-        <div class="progress-track" id="progress-track" onclick="seekAudio(event)">
-          <div class="progress-fill" id="ui-progress"></div>
+        <div class="progress-track" id="progress-track">
+          <div class="progress-fill" id="ui-progress">
+            <div class="progress-handle"></div>
+          </div>
         </div>
-        <button class="quote-btn" onclick="toggleText()">❞</button>
+        
+        <!-- Aa Tekst Knop (Lichtgroen) -->
+        <button class="quote-btn" onclick="toggleText()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 26" fill="none">
+            <path d="M26.25 0C27.0519 6.88745e-05 27.7385 0.252955 28.3096 0.758789C28.8806 1.26465 29.166 1.87268 29.166 2.58301V18.083C29.166 18.7933 28.8807 19.4014 28.3096 19.9072C27.7385 20.4131 27.0519 20.6659 26.25 20.666H5.83301L0 25.833V2.58301C0 1.87268 0.285405 1.26466 0.856445 0.758789C1.42755 0.252955 2.11407 6.8273e-05 2.91602 0H26.25ZM8.47559 6.41504V10.6689H10.7998C10.7769 11.5061 10.5613 12.1772 10.1514 12.6816C9.72982 13.1862 9.04004 13.5798 8.08301 13.8623L9.02344 15.6182C10.0372 15.2953 10.8806 14.8512 11.5527 14.2861C12.2134 13.7211 12.6693 13.0852 12.9199 12.3789C13.1591 11.6726 13.2783 10.6989 13.2783 9.45801V6.41504H8.47559ZM16.4912 6.41504V10.6689H18.8154C18.7926 11.5063 18.5761 12.1772 18.166 12.6816C17.7445 13.1861 17.0554 13.5798 16.0986 13.8623L17.0381 15.6182C18.0635 15.2952 18.9066 14.8512 19.5674 14.2861C20.2281 13.7211 20.6839 13.0806 20.9346 12.3643C21.1738 11.658 21.2939 10.6889 21.2939 9.45801L21.293 6.41504H16.4912Z" fill="#1D1B20"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
+
 </div>
 
 <script>
   const stopsData = {
     3: {
-      id: 3,
-      title: "Rijksmuseum garden",
-      subtitle: "Sheltered sculpture refuge",
-      bgImage: "stop1.png",
-      interaction: "text",
-      taskTime: 36, 
+      id: 3, pageIndex: 3, title: "Rijksmuseum garden", subtitle: "Sheltered sculpture refuge",
+      bgImage: "stop1.jpg", interaction: "text", taskTime: 25,
       audioSrc: "stop3_garden_mp3.mp3",
       lines: [
         { time: 0,  text: "Let's slow down for a moment while feeling the sun on your face." },
@@ -383,12 +552,8 @@
       ]
     },
     6: {
-      id: 6,
-      title: "The food stalls",
-      subtitle: "Aromas of Museumplein",
-      bgImage: "stop2.png",
-      interaction: "canvas",
-      taskTime: 25, 
+      id: 6, pageIndex: 6, title: "The food stalls", subtitle: "Aromas of Museumplein",
+      bgImage: "stop2.jpg", interaction: "canvas", taskTime: 31,
       audioSrc: "stop6_food_mp3.mp3",
       lines: [
         { time: 0,  text: "Oh, this is a serious distraction for a pigeon." },
@@ -406,12 +571,8 @@
       ]
     },
     14: {
-      id: 14,
-      title: "Women of Ravensbrück",
-      subtitle: "Memorial to remember",
-      bgImage: "stop3.png",
-      interaction: "text",
-      taskTime: 14, 
+      id: 14, pageIndex: 14, title: "Women of Ravensbrück", subtitle: "Memorial to remember",
+      bgImage: "stop3.jpg", interaction: "text", taskTime: 24,
       audioSrc: "stop14_memorial_mp3.mp3",
       lines: [
         { time: 0,  text: "This memorial commemorates the Dutch victims of Ravensbrück concentration camp and resistance to fascism." },
@@ -432,96 +593,65 @@
   let currentAudio = new Audio();
   let isTextHidden = false;
   let taskCompleted = false;
-  
-  let distanceInterval;
-  let wobbleInterval;
+  let findMyInterval = null;
+  let isMapView = false;
 
   const titleEl = document.getElementById('ui-title');
   const subtitleEl = document.getElementById('ui-subtitle');
+  const distanceEl = document.getElementById('ui-distance');
+  const statusEl = document.getElementById('ui-status');
+  const arrowSvg = document.getElementById('arrow-svg');
   const bgImageEl = document.getElementById('bg-image');
   const lyricsContainer = document.getElementById('lyrics-container');
-  const playPauseBtn = document.getElementById('play-pause-btn');
+  const playIcon = document.getElementById('play-icon');
+  const pauseIcon = document.getElementById('pause-icon');
   const progressFill = document.getElementById('ui-progress');
-  const pipCharacter = document.getElementById('pip-character');
   const mapToggleBtn = document.getElementById('map-toggle');
   const bgMapEl = document.getElementById('bg-map');
   const collapsibleText = document.getElementById('collapsible-text');
   const userInputBox = document.getElementById('user-input-box');
   const canvasLayer = document.getElementById('canvas-layer');
-  let isMapView = false;
+  const topUiContainer = document.getElementById('top-ui-container');
+  const paginatorDotsContainer = document.getElementById('paginator-dots-container');
 
-  const arrowSvg = `<svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.23572 24.0077C3.96357 24.7902 4.37724 25.6451 5.15968 25.9172C5.94213 26.1894 6.79706 25.7757 7.06921 24.9933L5.65247 24.5005L4.23572 24.0077ZM15.0027 0.847147C14.6419 0.101431 13.7448 -0.210581 12.9991 0.15025L0.846974 6.03032C0.101257 6.39115 -0.210754 7.28819 0.150076 8.0339C0.510907 8.77962 1.40794 9.09163 2.15366 8.7308L12.9556 3.50407L18.1823 14.306C18.5431 15.0517 19.4402 15.3637 20.1859 15.0029C20.9316 14.642 21.2436 13.745 20.8828 12.9993L15.0027 0.847147ZM5.65247 24.5005L7.06921 24.9933L15.0692 1.99327L13.6525 1.50049L12.2357 1.00771L4.23572 24.0077L5.65247 24.5005Z" fill="#6606FF"/></svg>`;
-  const pinSvg = `<svg width="24" height="28" viewBox="0 0 24 24" fill="#6606FF" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
-
-  function animateFindMy() {
-    const statusEl = document.getElementById('walking-status');
-    const distanceEl = document.getElementById('ui-distance');
-    const arrowEl = document.getElementById('find-my-arrow');
-
-    clearInterval(distanceInterval);
-    clearInterval(wobbleInterval);
-
-    // Reset default states
-    let currentDist = 25;
-    statusEl.textContent = 'Walking towards';
-    distanceEl.style.display = 'inline';
-    distanceEl.textContent = currentDist + ' METER';
-    arrowEl.innerHTML = arrowSvg;
-    arrowEl.style.transform = 'rotate(0deg)';
-
-    wobbleInterval = setInterval(() => {
-       const angle = (Math.random() * 40) - 20; 
-       arrowEl.style.transform = `rotate(${angle}deg)`;
-    }, 350);
-
-    distanceInterval = setInterval(() => {
-      currentDist -= Math.floor(Math.random() * 2) + 1;
-      if (currentDist <= 0) {
-         currentDist = 0;
-         clearInterval(distanceInterval);
-         clearInterval(wobbleInterval);
-         arrowEl.style.transform = 'rotate(0deg)';
-         
-         // Pin effect trigger!
-         statusEl.textContent = 'Standing at';
-         distanceEl.style.display = 'none';
-         arrowEl.innerHTML = pinSvg;
-      } else {
-         distanceEl.textContent = currentDist + ' METER';
-      }
-    }, 300);
+  function buildPaginator(activeIndex) {
+    if (!paginatorDotsContainer) return;
+    paginatorDotsContainer.innerHTML = '';
+    for(let i=1; i<=15; i++){
+      let dot = document.createElement('div');
+      dot.className = i === activeIndex ? 'page-dot active' : 'page-dot';
+      dot.onclick = () => {
+        if(i === 3) loadStop(3, true);
+        if(i === 6) loadStop(6, true);
+        if(i === 14) loadStop(14, true);
+      };
+      paginatorDotsContainer.appendChild(dot);
+    }
   }
 
-  function loadStop(key) {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    }
+  function loadStop(key, autoPlay = false) {
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
     isPlaying = false;
     taskCompleted = false;
-    playPauseBtn.innerHTML = '▶';
+    updatePlayPauseUI();
+    
     currentStopKey = key;
     currentLineIndex = -1;
     const stop = stopsData[key];
 
+    buildPaginator(stop.pageIndex);
     titleEl.textContent = stop.title;
     subtitleEl.textContent = stop.subtitle;
     bgImageEl.style.backgroundImage = `url('${stop.bgImage}')`;
     progressFill.style.width = '0%';
-
-    document.getElementById('page-text').textContent = `${key} / 15`;
-    let dotsHTML = '';
-    for(let i=1; i<=15; i++) {
-        if(i === key) dotsHTML += '<span class="dot active-dot"></span>';
-        else dotsHTML += '<span class="dot"></span>';
-    }
-    document.getElementById('page-dots').innerHTML = dotsHTML;
-
+    
     canvasLayer.classList.remove('active');
     userInputBox.classList.remove('active');
+    topUiContainer.style.opacity = '1';
+    mapToggleBtn.style.opacity = '1';
+    if(isTextHidden) toggleText();
 
     currentAudio.src = stop.audioSrc;
-    
     lyricsContainer.innerHTML = '';
     stop.lines.forEach((lineData) => {
       const div = document.createElement('div');
@@ -532,86 +662,82 @@
     });
 
     if (isMapView) toggleMap();
-    if (isTextHidden) toggleText();
-    
+    startFindMyAnimation();
     highlightLine(0);
-    animateFindMy();
-    updateOverlayPositions();
 
-    if (key === 6 || key === 14) {
-      setTimeout(() => {
-        currentAudio.play().then(() => {
-          isPlaying = true;
-          playPauseBtn.innerHTML = '⏸';
-        }).catch(e => console.log("Auto-play prevented:", e));
-      }, 300);
-    }
+    if (autoPlay) togglePlay();
   }
 
-  function nextStop() {
-    if (currentStopKey === 3) loadStop(6);
-    else if (currentStopKey === 6) loadStop(14);
-    else loadStop(3);
-  }
+  function startFindMyAnimation() {
+    clearInterval(findMyInterval);
+    let distance = 25;
+    statusEl.textContent = "Walking towards";
+    distanceEl.style.display = "block";
+    distanceEl.textContent = distance + " METER";
+    
+    arrowSvg.innerHTML = `<path d="M4.23572 24.0077C3.96357 24.7902 4.37724 25.6451 5.15968 25.9172C5.94213 26.1894 6.79706 25.7757 7.06921 24.9933L5.65247 24.5005L4.23572 24.0077ZM15.0027 0.847147C14.6419 0.101431 13.7448 -0.210581 12.9991 0.15025L0.846974 6.03032C0.101257 6.39115 -0.210754 7.28819 0.150076 8.0339C0.510907 8.77962 1.40794 9.09163 2.15366 8.7308L12.9556 3.50407L18.1823 14.306C18.5431 15.0517 19.4402 15.3637 20.1859 15.0029C20.9316 14.642 21.2436 13.745 20.8828 12.9993L15.0027 0.847147ZM5.65247 24.5005L7.06921 24.9933L15.0692 1.99327L13.6525 1.50049L12.2357 1.00771L4.23572 24.0077L5.65247 24.5005Z" fill="#6606FF"/>`;
+    arrowSvg.classList.add('wobble');
 
-  function prevStop() {
-    if (currentStopKey === 14) loadStop(6);
-    else if (currentStopKey === 6) loadStop(3);
-    else loadStop(14);
-  }
-
-  function updateOverlayPositions() {
-    // dynamically setting the position so it's always right above the cards
-    if (isTextHidden) {
-      pipCharacter.style.bottom = "140px";
-      mapToggleBtn.style.bottom = "140px";
-    } else {
-      pipCharacter.style.bottom = "calc(32vh + 140px)";
-      mapToggleBtn.style.bottom = "calc(32vh + 140px)";
-    }
+    findMyInterval = setInterval(() => {
+      distance -= 1;
+      if (distance > 0) {
+        distanceEl.textContent = distance + " METER";
+      } else {
+        clearInterval(findMyInterval);
+        statusEl.textContent = "Standing at";
+        distanceEl.style.display = "none";
+        arrowSvg.classList.remove('wobble');
+        arrowSvg.innerHTML = `<path d="M11 0C5.5 0 1 4.5 1 10C1 17.5 11 26 11 26C11 26 21 17.5 21 10C21 4.5 16.5 0 11 0ZM11 13.5C9.1 13.5 7.5 11.9 7.5 10C7.5 8.1 9.1 6.5 11 6.5C12.9 6.5 14.5 8.1 14.5 10C14.5 11.9 12.9 13.5 11 13.5Z" fill="#6606FF"/>`;
+      }
+    }, 400); 
   }
 
   function toggleText() {
     isTextHidden = !isTextHidden;
-    if (isTextHidden) {
-      collapsibleText.classList.add('hidden');
+    if (isTextHidden) collapsibleText.classList.add('hidden');
+    else collapsibleText.classList.remove('hidden');
+  }
+
+  function updatePlayPauseUI() {
+    if (isPlaying) {
+      playIcon.style.display = 'none';
+      pauseIcon.style.display = 'block';
     } else {
-      collapsibleText.classList.remove('hidden');
+      playIcon.style.display = 'block';
+      pauseIcon.style.display = 'none';
     }
-    updateOverlayPositions();
   }
 
   function togglePlay() {
     if (isPlaying) {
       currentAudio.pause();
       isPlaying = false;
-      playPauseBtn.innerHTML = '▶';
+      updatePlayPauseUI();
     } else {
       currentAudio.play().then(() => {
         isPlaying = true;
-        playPauseBtn.innerHTML = '⏸';
-      }).catch(e => console.log("Play prevented:", e));
+        updatePlayPauseUI();
+      });
     }
   }
 
   currentAudio.ontimeupdate = () => {
     if (!currentAudio.duration) return;
     
+    progressFill.style.width = (currentAudio.currentTime / currentAudio.duration) * 100 + '%';
+    
     const stop = stopsData[currentStopKey];
-    if (!taskCompleted && currentAudio.currentTime >= stop.taskTime) {
+    if (currentAudio.currentTime >= stop.taskTime && !taskCompleted) {
       currentAudio.pause();
       isPlaying = false;
-      playPauseBtn.innerHTML = '▶';
-      showTask(stop);
-      taskCompleted = true;
+      updatePlayPauseUI();
+      triggerTask(stop.interaction);
     }
 
-    const progressPercent = (currentAudio.currentTime / currentAudio.duration) * 100;
-    progressFill.style.width = progressPercent + '%';
-    
+    const lines = stop.lines;
     let activeIdx = 0;
-    for (let i = 0; i < stop.lines.length; i++) {
-      if (currentAudio.currentTime >= stop.lines[i].time) activeIdx = i;
+    for (let i = 0; i < lines.length; i++) {
+      if (currentAudio.currentTime >= lines[i].time) activeIdx = i;
       else break;
     }
     
@@ -620,42 +746,34 @@
 
   currentAudio.onended = () => {
     isPlaying = false;
-    playPauseBtn.innerHTML = '▶';
+    updatePlayPauseUI();
   };
 
-  function showTask(stop) {
-    if (stop.interaction === 'canvas') {
+  function triggerTask(type) {
+    if (type === 'canvas') {
       canvasLayer.classList.add('active');
-      document.getElementById('top-ui-container').style.opacity = '0';
-      document.getElementById('top-ui-container').style.pointerEvents = 'none';
-      document.getElementById('map-toggle').style.opacity = '0';
-      document.getElementById('map-toggle').style.pointerEvents = 'none';
+      topUiContainer.style.opacity = '0';
+      mapToggleBtn.style.opacity = '0';
+      topUiContainer.style.pointerEvents = 'none';
       if (!isTextHidden) toggleText();
       resizeCanvas();
     } else {
       userInputBox.classList.add('active');
-      if (isTextHidden) toggleText();
       lyricsContainer.scrollTo({ top: lyricsContainer.scrollHeight, behavior: 'smooth' });
     }
   }
 
   function completeTask() {
+    taskCompleted = true;
     canvasLayer.classList.remove('active');
     userInputBox.classList.remove('active');
-    document.getElementById('top-ui-container').style.opacity = '1';
-    document.getElementById('top-ui-container').style.pointerEvents = 'auto';
-    document.getElementById('map-toggle').style.opacity = '1';
-    document.getElementById('map-toggle').style.pointerEvents = 'auto';
+    
+    topUiContainer.style.opacity = '1';
+    mapToggleBtn.style.opacity = '1';
+    topUiContainer.style.pointerEvents = 'auto';
     
     if (isTextHidden) toggleText();
     togglePlay();
-  }
-
-  function handleEnter(e) {
-    if(e.key === 'Enter') {
-      e.target.value = ''; 
-      completeTask();
-    }
   }
 
   function highlightLine(index) {
@@ -675,7 +793,6 @@
   function jumpToTime(seconds) {
     if (currentAudio) {
       currentAudio.currentTime = seconds;
-      if (seconds > stopsData[currentStopKey].taskTime) taskCompleted = true;
       if (!isPlaying) togglePlay();
     }
   }
@@ -686,40 +803,49 @@
     }
   }
 
-  const track = document.getElementById('progress-track');
-  let isDraggingAudio = false;
-
-  function updateAudioDrag(clientX) {
-    const rect = track.getBoundingClientRect();
-    let clickX = clientX - rect.left;
-    clickX = Math.max(0, Math.min(clickX, rect.width));
-    if (currentAudio.duration) {
-      currentAudio.currentTime = (clickX / rect.width) * currentAudio.duration;
-    }
+  function nextStop() {
+    if (currentStopKey === 3) loadStop(6, true);
+    else if (currentStopKey === 6) loadStop(14, true);
+    else loadStop(3, true);
   }
 
-  track.addEventListener('mousedown', (e) => { isDraggingAudio = true; updateAudioDrag(e.clientX); });
-  window.addEventListener('mousemove', (e) => { if (isDraggingAudio) updateAudioDrag(e.clientX); });
-  window.addEventListener('mouseup', () => { isDraggingAudio = false; });
-  track.addEventListener('touchstart', (e) => { isDraggingAudio = true; updateAudioDrag(e.touches[0].clientX); }, { passive: true });
-  window.addEventListener('touchmove', (e) => { if (isDraggingAudio) updateAudioDrag(e.touches[0].clientX); }, { passive: true });
-  window.addEventListener('touchend', () => { isDraggingAudio = false; });
+  function prevStop() {
+    if (currentStopKey === 14) loadStop(6, true);
+    else if (currentStopKey === 6) loadStop(3, true);
+    else loadStop(14, true);
+  }
 
-  function seekAudio(event) {
-    const rect = track.getBoundingClientRect();
+  const progressTrack = document.getElementById('progress-track');
+  function scrub(e) {
     if (currentAudio.duration) {
-      currentAudio.currentTime = ((event.clientX - rect.left) / rect.width) * currentAudio.duration;
+      const rect = progressTrack.getBoundingClientRect();
+      const clickX = (e.clientX || e.touches[0].clientX) - rect.left;
+      const percent = Math.max(0, Math.min(clickX / rect.width, 1));
+      currentAudio.currentTime = percent * currentAudio.duration;
     }
   }
+  
+  let isDragging = false;
+  progressTrack.addEventListener('mousedown', (e) => { isDragging = true; scrub(e); });
+  window.addEventListener('mouseup', () => isDragging = false);
+  window.addEventListener('mousemove', (e) => { if (isDragging) scrub(e); });
+  
+  progressTrack.addEventListener('touchstart', (e) => { isDragging = true; scrub(e); });
+  window.addEventListener('touchend', () => isDragging = false);
+  window.addEventListener('touchmove', (e) => { if (isDragging) scrub(e); });
 
   function toggleMap() {
     isMapView = !isMapView;
     if (isMapView) {
-      bgMapEl.style.opacity = '1'; bgMapEl.style.pointerEvents = 'auto';
-      mapToggleBtn.style.backgroundColor = 'white'; mapToggleBtn.style.color = 'var(--purple)';
+      bgMapEl.style.opacity = '1';
+      bgMapEl.style.pointerEvents = 'auto';
+      mapToggleBtn.style.backgroundColor = 'white';
+      mapToggleBtn.style.color = 'var(--purple)';
     } else {
-      bgMapEl.style.opacity = '0'; bgMapEl.style.pointerEvents = 'none';
-      mapToggleBtn.style.backgroundColor = 'var(--purple)'; mapToggleBtn.style.color = 'white';
+      bgMapEl.style.opacity = '0';
+      bgMapEl.style.pointerEvents = 'none';
+      mapToggleBtn.style.backgroundColor = 'var(--purple)';
+      mapToggleBtn.style.color = 'white';
     }
   }
   mapToggleBtn.addEventListener('click', toggleMap);
@@ -731,19 +857,30 @@
   function resizeCanvas() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 5;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000000';
   }
   window.addEventListener('resize', resizeCanvas);
+
   function setColor(color) { ctx.strokeStyle = color; }
 
   canvas.addEventListener('mousedown', startPos);
   canvas.addEventListener('mouseup', endPos);
   canvas.addEventListener('mousemove', draw);
-  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); const t = e.touches[0]; startPos(new MouseEvent("mousedown", { clientX: t.clientX, clientY: t.clientY })); }, { passive: false });
-  canvas.addEventListener('touchend', (e) => { e.preventDefault(); endPos(); }, { passive: false });
-  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); const t = e.touches[0]; draw(new MouseEvent("mousemove", { clientX: t.clientX, clientY: t.clientY })); }, { passive: false });
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault(); 
+    const touch = e.touches[0];
+    startPos(new MouseEvent("mousedown", { clientX: touch.clientX, clientY: touch.clientY }));
+  }, { passive: false });
+  canvas.addEventListener('touchend', (e) => {
+    e.preventDefault(); endPos();
+  }, { passive: false });
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    draw(new MouseEvent("mousemove", { clientX: touch.clientX, clientY: touch.clientY }));
+  }, { passive: false });
 
   function startPos(e) { isDrawing = true; draw(e); }
   function endPos() { isDrawing = false; ctx.beginPath(); }
@@ -751,7 +888,9 @@
     if (!isDrawing) return;
     const rect = canvas.getBoundingClientRect();
     ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-    ctx.stroke(); ctx.beginPath(); ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
   }
 
   loadStop(3);
