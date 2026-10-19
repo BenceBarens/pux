@@ -201,11 +201,14 @@
 
     #pip-character {
       position: absolute;
-      bottom: 1.25rem; 
-      left: -0.625rem;
-      width: 8.125rem;
+      bottom: -1.25rem; 
+      left: -4rem;
+      width: 14rem;
+      height: auto;
       z-index: 10;
       pointer-events: none;
+      filter: drop-shadow(0 0.25rem 0.5rem rgba(0,0,0,0.2));
+      transition: opacity 0.2s ease;
     }
 
     #map-toggle {
@@ -405,8 +408,10 @@
     }
 
     #intro-pip {
-      width: 8rem;
+      width: 20rem;
+      height: auto;
       margin-bottom: 1.5rem;
+      filter: drop-shadow(0 0.25rem 0.5rem rgba(0,0,0,0.15));
     }
 
     #intro-text {
@@ -463,25 +468,16 @@
 <div id="app-container">
 
   <div id="intro-screen">
-    <svg id="pip-character" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="75" cy="85" r="45" fill="#6f7887"/>
-      <path d="M40 90 Q15 95 30 115 Q60 110 70 95 Z" fill="#4d5563"/>
-      <circle cx="85" cy="65" r="18" fill="#ffffff"/>
-      <circle cx="89" cy="63" r="7" fill="#1e293b"/>
-      <circle cx="115" cy="65" r="16" fill="#ffffff"/>
-      <circle cx="117" cy="63" r="6" fill="#1e293b"/>
-      <polygon points="102,74 135,79 105,89" fill="#f59e0b"/>
-      <path d="M55 45 L115 35 L105 25 L65 32 Z" fill="#78350f"/>
-    </svg>
+    <img id="intro-pip" src="pip3.png" alt="Pip the Pigeon">
     <p id="intro-text">Oh, hi there! You're just in time. I'm Pip the pigeon, and I'll be your trusted guide during this tour around Museumplein, the place in Amsterdam I've called home for years and years. I know everything there is to know about the square, so you're in good hands. When you're ready, put on your headphones, and press start to kick things off.</p>
     <div class="intro-buttons">
       <button class="intro-play-btn" id="intro-play-btn" onclick="playIntroAudio()">
         <span id="intro-play-content" style="display: flex; align-items: center; gap: 0.75rem;">
           <svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg>
-          Play audio
+          Play intro audio
         </span>
       </button>
-      <button class="intro-btn" onclick="startTour()">Start</button>
+      <button class="intro-btn" onclick="startTour()">Start tour</button>
     </div>
   </div>
   
@@ -537,16 +533,8 @@
       </div>
     </div>
 
-    <svg id="pip-character" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="75" cy="85" r="45" fill="#6f7887"/>
-      <path d="M40 90 Q15 95 30 115 Q60 110 70 95 Z" fill="#4d5563"/>
-      <circle cx="85" cy="65" r="18" fill="#ffffff"/>
-      <circle cx="89" cy="63" r="7" fill="#1e293b"/>
-      <circle cx="115" cy="65" r="16" fill="#ffffff"/>
-      <circle cx="117" cy="63" r="6" fill="#1e293b"/>
-      <polygon points="102,74 135,79 105,89" fill="#f59e0b"/>
-      <path d="M55 45 L115 35 L105 25 L65 32 Z" fill="#78350f"/>
-    </svg>
+    <!-- Dynamic character image switching -->
+    <img id="pip-character" src="pip2.png" alt="Pip the Pigeon">
 
     <button id="map-toggle">
       <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -570,7 +558,7 @@
       <div class="player-buttons">
         <button class="skip-btn" onclick="skipTime(-15)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 47" fill="none">
-            <path d="M13.6465 4.35449C17.8239 2.63984 22.4337 2.25056 26.8486 3.24805C31.4759 4.2936 35.6414 6.80689 38.7236 10.4131C41.8059 14.0194 43.64 18.526 43.9521 23.2598C44.2641 27.9934 43.0381 32.702 40.4561 36.6816C37.8739 40.6612 34.0739 43.6997 29.624 45.3438C25.1742 46.9877 20.3118 47.1496 15.7627 45.8047C11.2135 44.4596 7.22042 41.6793 4.37988 37.8799C1.53943 34.0803 0.00283958 29.4636 0 24.7197V22.8789C0 21.7743 0.895437 20.8789 2 20.8789C3.10456 20.8789 4 21.7743 4 22.8789V24.7188C4.00263 28.5995 5.25941 32.3761 7.58301 35.4844C9.90709 38.5931 13.1743 40.8682 16.8965 41.9688C20.6186 43.0692 24.5974 42.9369 28.2383 41.5918C31.8791 40.2467 34.988 37.7599 37.1006 34.5039C39.213 31.2478 40.2162 27.3953 39.9609 23.5225C39.7055 19.6495 38.2044 15.9623 35.6826 13.0117C33.1607 10.0613 29.7527 8.00481 25.9668 7.14941C22.5762 6.38338 19.046 6.61962 15.7988 7.81152L18.7197 12.5039L4 12.9932L10.9365 0L13.6465 4.35449ZM30.6875 20.959H24.6592L24.4854 23.3438C24.8083 23.2017 25.1377 23.0855 25.4736 22.9951C25.8096 22.9047 26.1973 22.8594 26.6367 22.8594C27.4637 22.8594 28.226 23.0207 28.9238 23.3438C29.6346 23.6539 30.2034 24.1322 30.6299 24.7783C31.0691 25.4115 31.289 26.206 31.2891 27.1621C31.2891 28.1571 31.056 29.0166 30.5908 29.7402C30.1385 30.4639 29.4989 31.0195 28.6719 31.4072C27.8577 31.7949 26.9012 31.9893 25.8027 31.9893C24.6399 31.9892 23.6387 31.8014 22.7988 31.4268C21.9718 31.0391 21.2086 30.5221 20.5107 29.876L22.4492 27.6084C22.992 28.0736 23.5288 28.4349 24.0586 28.6934C24.6014 28.9518 25.1702 29.0811 25.7646 29.0811C26.4494 29.081 26.9854 28.9131 27.373 28.5771C27.7736 28.2283 27.9746 27.7763 27.9746 27.2207C27.9746 26.8459 27.8774 26.5224 27.6836 26.251C27.4898 25.9797 27.2246 25.773 26.8887 25.6309C26.5527 25.4887 26.1649 25.418 25.7256 25.418C25.3251 25.418 24.9504 25.4756 24.6016 25.5918C24.2526 25.7081 23.9159 25.8572 23.5928 26.0381L21.5381 24.9141L21.9648 18.1289H30.7266L30.6875 20.959ZM18.4551 31.7178H15.1016V21.2109H12.252V18.0322H18.4551V31.7178Z" fill="#1D1B20"/>
+            <path d="M13.6465 4.35449C17.8239 2.63984 22.4337 2.25056 26.8486 3.24805C31.4759 4.2936 35.6414 6.80689 38.7236 10.4131C41.8059 14.0194 43.64 18.526 43.9521 23.2598C44.2641 27.9934 43.0381 32.702 40.4561 36.6816C37.8739 40.6612 34.0739 43.6997 29.624 45.3438C25.1742 46.9877 20.3118 47.1496 15.7627 45.8047C11.2135 44.4596 7.22042 41.6793 4.37988 37.8799C1.53943 34.0803 0.00283958 29.4636 0 24.7197V22.8789C0 21.7743 0.895437 20.8789 2 20.8789C3.10456 20.8789 4 21.7743 4 22.8789V24.7188C4.00263 28.5995 5.25941 32.3761 7.58301 35.4844C9.90709 38.5931 13.1743 40.8682 16.8965 41.9688C20.6186 43.0692 24.5974 42.9369 28.2383 41.5918C31.8791 40.2467 34.988 37.7599 37.1006 34.5039C39.213 31.2478 40.2162 27.3953 39.9609 23.5225C39.7055 19.6495 38.2044 15.9623 35.6826 13.0117C33.1607 10.0613 29.7527 8.00481 25.9668 7.14941C22.5762 6.38338 19.046 6.61962 15.7988 7.81152L18.7197 12.5039L4 12.9932L10.9365 0L13.6465 4.35449ZM30.6875 20.959H24.6592L24.4854 23.3438C24.8083 23.2017 25.1377 23.0855 25.4736 22.9951C25.8096 22.9047 26.1973 22.8594 26.6367 22.8594C27.4637 22.8594 28.226 23.0207 28.9238 23.3438C29.6346 23.6539 30.2034 24.1322 30.6299 24.7783C31.0691 25.4115 31.289 26.206 31.2891 27.1621C31.2891 28.1571 31.056 29.0166 30.5908 29.7402C30.1385 30.4639 29.4989 31.0195 28.6719 31.4072C27.8577 31.7949 26.9012 31.9893 25.8027 31.9893C24.6399 31.9892 23.6387 31.8014 22.7988 31.4268C21.9718 31.0391 21.2086 30.522 20.5107 29.876L22.4492 27.6084C22.992 28.0736 23.5288 28.4349 24.0586 28.6934C24.6014 28.9518 25.1702 29.0811 25.7646 29.0811C26.4494 29.081 26.9854 28.9131 27.373 28.5771C27.7736 28.2283 27.9746 27.7763 27.9746 27.2207C27.9746 26.8459 27.8774 26.5224 27.6836 26.251C27.4898 25.9797 27.2246 25.773 26.8887 25.6309C26.5527 25.4887 26.1649 25.418 25.7256 25.418C25.3251 25.418 24.9504 25.4756 24.6016 25.5918C24.2526 25.7081 23.9159 25.8572 23.5928 26.0381L21.5381 24.9141L21.9648 18.1289H30.7266L30.6875 20.959ZM18.4551 31.7178H15.1016V21.2109H12.252V18.0322H18.4551V31.7178Z" fill="#1D1B20"/>
           </svg>
         </button>
         <button class="play-btn" id="play-pause-btn" onclick="togglePlay()">
@@ -615,16 +603,16 @@
       bgImage: "stop1.jpg", interaction: "text", taskTime: 43,
       audioSrc: "1.m4a",
       lines: [
-        { time: 0,  text: "Let's slow down for a moment while feeling the sun on your face." },
-        { time: 5,  text: "There are stories hiding here, between the statues and the leaves of the trees." },
-        { time: 10,  text: "Take a gentle breath." },
-        { time: 12, text: "Can you notice a flower nearby, or perhaps the smell of plants and earth?" },
-        { time: 17, text: "Now listen. Perhaps you can hear water flowing from the fountain, footsteps on gravel, or people talking quietly." },
-        { time: 27, text: "If someone is drawing or painting, notice how carefully they're looking. You can try that too." },
-        { time: 35, text: "Choose one small detail you would usually walk past and focus on it for a brief moment." },
-        { time: 43.1, text: "These sculptures are part of the museum's garden." },
-        { time: 47, text: "But the people stopping to look give this place a different rhythm from the street." },
-        { time: 52, text: "Hmm. Maybe the secret of Museumplein is learning to slow down. Although… our next neighbours might disagree." }
+        { time: 0,    text: "Let's slow down for a moment while feeling the sun on your face.", pip: "pip1.png" },
+        { time: 5,    text: "There are stories hiding here, between the statues and the leaves of the trees.", pip: "pip1.png" },
+        { time: 10,   text: "Take a gentle breath.", pip: "pip2.png" },
+        { time: 12,   text: "Can you notice a flower nearby, or perhaps the smell of plants and earth?", pip: "pip2.png" },
+        { time: 17,   text: "Now listen. Perhaps you can hear water flowing from the fountain, footsteps on gravel, or people talking quietly.", pip: "pip2.png" },
+        { time: 27,   text: "If someone is drawing or painting, notice how carefully they're looking. You can try that too.", pip: "pip1.png" },
+        { time: 35,   text: "Choose one small detail you would usually walk past and focus on it for a brief moment.", pip: "pip2.png" },
+        { time: 43.1, text: "These sculptures are part of the museum's garden.", pip: "pip1.png" },
+        { time: 47,   text: "But the people stopping to look give this place a different rhythm from the street.", pip: "pip1.png" },
+        { time: 52,   text: "Hmm. Maybe the secret of Museumplein is learning to slow down. Although… our next neighbours might disagree.", pip: "pip2.png" }
       ]
     },
     6: {
@@ -632,20 +620,20 @@
       bgImage: "stop2.jpg", interaction: "canvas", taskTime: 56.5,
       audioSrc: "2.m4a",
       lines: [
-        { time: 0,  text: "Oh, this is a serious distraction for a pigeon." },
-        { time: 4,  text: "Take a gentle breath." },
-        { time: 5,  text: "What can you smell today? Something sweet? Coffee?" },
-        { time: 10,  text: "Something cooking?" },
-        { time: 12, text: "You might find stroopwafels, poffertjes, or other snacks around here." },
-        { time: 17, text: "But let your nose investigate before I make promises." },
-        { time: 21, text: "Listen too. Can you separate the sound of cooking from the conversations around you?" },
-        { time: 27, text: "If you already have a snack or drink, take a small taste." },
-        { time: 32, text: "Is it sweet, salty, bitter, warm, or cool?" },
-        { time: 37, text: "If not, think of a familiar flavour that these smells remind you of." },
-        { time: 41, text: "Let's try and capture all of these smells and tastes on paper." },
-        { time: 47, text: "Try to draw all of the feelings that come up right now. It doens't have to be pretty, an abstract sketch is enough." },
-        { time: 56.6, text: "Some people come here for a famous painting. Others need lunch and somewhere to sit." },
-        { time: 63, text: "Both are part of life on the square. I'm beginning to think every visitor brings a different Museumplein experience with them." }
+        { time: 0,    text: "Oh, this is a serious distraction for a pigeon.", pip: "pip3.png" },
+        { time: 4,    text: "Take a gentle breath.", pip: "pip2.png" },
+        { time: 5,    text: "What can you smell today? Something sweet? Coffee?", pip: "pip2.png" },
+        { time: 10,   text: "Something cooking?", pip: "pip1.png" },
+        { time: 12,   text: "You might find stroopwafels, poffertjes, or other snacks around here.", pip: "pip3.png" },
+        { time: 17,   text: "But let your nose investigate before I make promises.", pip: "pip1.png" },
+        { time: 21,   text: "Listen too. Can you separate the sound of cooking from the conversations around you?", pip: "pip2.png" },
+        { time: 27,   text: "If you already have a snack or drink, take a small taste.", pip: "pip3.png" },
+        { time: 32,   text: "Is it sweet, salty, bitter, warm, or cool?", pip: "pip2.png" },
+        { time: 37,   text: "If not, think of a familiar flavour that these smells remind you of.", pip: "pip2.png" },
+        { time: 41,   text: "Let's try and capture all of these smells and tastes on paper.", pip: "pip1.png" },
+        { time: 47,   text: "Try to draw all of the feelings that come up right now. It doens't have to be pretty, an abstract sketch is enough.", pip: "pip1.png" },
+        { time: 56.6, text: "Some people come here for a famous painting. Others need lunch and somewhere to sit.", pip: "pip1.png" },
+        { time: 63,   text: "Both are part of life on the square. I'm beginning to think every visitor brings a different Museumplein experience with them.", pip: "pip3.png" }
       ]
     },
     14: {
@@ -653,16 +641,16 @@
       bgImage: "stop3.jpg", interaction: "text", taskTime: 37,
       audioSrc: "3.m4a",
       lines: [
-        { time: 0,  text: "This memorial commemorates the Dutch victims of Ravensbrück concentration camp and resistance to fascism." },
-        { time: 10,  text: "Notice the upright metal surfaces and the commemorative lettering. Take your time." },
-        { time: 17, text: "As your position changes, you may see light and reflections change across the metal." },
-        { time: 23, text: "Try standing directly within the artwork. With enough patience, you can literally hear and see flashes of the war." },
-        { time: 34, text: "What is it you feel when these sounds play?" },
-        { time: 37.2, text: "You can remain where you are and watch or move a little along the accessible path." },
-        { time: 45, text: "Listen to the surroundings. The wind, footsteps, and everyday activity continue while we stand here remembering." },
-        { time: 53, text: "I don't think I can reduce this square to one answer anymore." },
-        { time: 58, text: "It holds joyful moments, ordinary routines, and histories we must remember. Each needs space." },
-        { time: 66, text: "When you're ready, let's find somewhere to sit." }
+        { time: 0,    text: "This memorial commemorates the Dutch victims of Ravensbrück concentration camp and resistance to fascism.", pip: "pip1.png" },
+        { time: 10,   text: "Notice the upright metal surfaces and the commemorative lettering. Take your time.", pip: "pip2.png" },
+        { time: 17,   text: "As your position changes, you may see light and reflections change across the metal.", pip: "pip2.png" },
+        { time: 23,   text: "Try standing directly within the artwork. With enough patience, you can literally hear and see flashes of the war.", pip: "pip1.png" },
+        { time: 34,   text: "What is it you feel when these sounds play?", pip: "pip2.png" },
+        { time: 37.2, text: "You can remain where you are and watch or move a little along the accessible path.", pip: "pip1.png" },
+        { time: 45,   text: "Listen to the surroundings. The wind, footsteps, and everyday activity continue while we stand here remembering.", pip: "pip2.png" },
+        { time: 53,   text: "I don't think I can reduce this square to one answer anymore.", pip: "pip2.png" },
+        { time: 58,   text: "It holds joyful moments, ordinary routines, and histories we must remember. Each needs space.", pip: "pip1.png" },
+        { time: 66,   text: "When you're ready, let's find somewhere to sit.", pip: "pip3.png" }
       ]
     }
   };
@@ -696,15 +684,26 @@
   const paginatorDotsContainer = document.getElementById('paginator-dots-container');
   const paginatorNumbers = document.getElementById('paginator-numbers');
   const taskMarker = document.getElementById('task-marker');
+  const pipCharacterEl = document.getElementById('pip-character');
+
+  function updatePipPose(imageName) {
+    if (pipCharacterEl && imageName && pipCharacterEl.getAttribute('src') !== imageName) {
+      pipCharacterEl.style.opacity = '0.3';
+      setTimeout(() => {
+        pipCharacterEl.src = imageName;
+        pipCharacterEl.style.opacity = '1';
+      }, 150);
+    }
+  }
 
   function playIntroAudio() {
     const btnContent = document.getElementById('intro-play-content');
     if (introAudio.paused) {
       introAudio.play();
-      btnContent.innerHTML = `<svg viewBox="0 0 12 14" fill="none"><path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="currentColor"/></svg> Pause Audio`;
+      btnContent.innerHTML = `<svg viewBox="0 0 12 14" fill="none"><path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="currentColor"/></svg> Pause intro audio`;
     } else {
       introAudio.pause();
-      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play Audio`;
+      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play intro audio`;
     }
   }
 
@@ -916,6 +915,11 @@
 
   function highlightLine(index) {
     currentLineIndex = index;
+    const stop = stopsData[currentStopKey];
+    if (stop && stop.lines[index] && stop.lines[index].pip) {
+      updatePipPose(stop.lines[index].pip);
+    }
+
     const lines = lyricsContainer.getElementsByClassName('lyric-line');
     for (let i = 0; i < lines.length; i++) {
       if (i === index) {
