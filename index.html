@@ -694,6 +694,10 @@
     }
   };
 
+  introAudio.onerror = (e) => {
+    console.error("Intro audio file could not be loaded. Check if 'intro.m4a' exists on your live server and has correct case sensitivity.", e);
+  };
+
   function updatePipPose(imageName) {
     if (pipCharacterEl && imageName && pipCharacterEl.getAttribute('src') !== imageName) {
       pipCharacterEl.style.opacity = '0.3';
@@ -707,6 +711,7 @@
   function playIntroAudio() {
     const btnContent = document.getElementById('intro-play-content');
     if (introAudio.paused) {
+      introAudio.load();
       let playPromise = introAudio.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
@@ -722,27 +727,11 @@
     }
   }
 
-  function playIntroAudio() {
-    const btnContent = document.getElementById('intro-play-content');
-    if (introAudio.paused) {
-      let playPromise = introAudio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          btnContent.innerHTML = `<svg viewBox="0 0 12 14" fill="none"><path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="currentColor"/></svg> Pause intro`;
-        }).catch((err) => {
-          console.error("Intro audio playback error:", err);
-          btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play intro`;
-        });
-      }
-    } else {
-      introAudio.pause();
-      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play intro`;
-    }
-  }
-
   function startTour() {
-    introAudio.pause();
-    introAudio.currentTime = 0;
+    if (!introAudio.paused) {
+      introAudio.pause();
+      introAudio.currentTime = 0;
+    }
     document.getElementById('intro-screen').classList.add('hidden');
     loadStop(3, true); 
   }
@@ -820,7 +809,7 @@
     highlightLine(0);
 
     if (autoPlay) {
-      setTimeout(() => togglePlay(), 50); 
+      togglePlay(); // Direct call synchronously within user interaction!
     }
   }
 
