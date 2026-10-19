@@ -245,7 +245,7 @@
       padding: 0 1.25rem;
       display: flex;
       flex-direction: column;
-      height: 25vh; /* Aangepast naar 25vh */
+      height: 25vh;
       transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
       overflow: hidden;
     }
@@ -384,11 +384,106 @@
     }
 
     .quote-btn svg { width: 1.25rem; height: auto; }
+
+    #intro-screen {
+      position: absolute;
+      inset: 0;
+      background: var(--light-green);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+      transition: opacity 0.5s ease;
+    }
+
+    #intro-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #intro-pip {
+      width: 8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #intro-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: var(--text-dark);
+      margin-bottom: 2rem;
+    }
+
+    .intro-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    .intro-btn {
+      background: var(--purple);
+      color: white;
+      border: none;
+      padding: 1rem 2.5rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      width: 100%;
+      max-width: 15rem;
+    }
+    
+    .intro-play-btn {
+      background: rgba(255,255,255, 0.8);
+      color: var(--purple);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 2rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 15rem;
+    }
+    
+    .intro-play-btn svg { width: 0.75rem; height: auto; fill: var(--purple); }
   </style>
 </head>
 <body>
 
 <div id="app-container">
+
+  <div id="intro-screen">
+    <svg id="pip-character" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="75" cy="85" r="45" fill="#6f7887"/>
+      <path d="M40 90 Q15 95 30 115 Q60 110 70 95 Z" fill="#4d5563"/>
+      <circle cx="85" cy="65" r="18" fill="#ffffff"/>
+      <circle cx="89" cy="63" r="7" fill="#1e293b"/>
+      <circle cx="115" cy="65" r="16" fill="#ffffff"/>
+      <circle cx="117" cy="63" r="6" fill="#1e293b"/>
+      <polygon points="102,74 135,79 105,89" fill="#f59e0b"/>
+      <path d="M55 45 L115 35 L105 25 L65 32 Z" fill="#78350f"/>
+    </svg>
+    <p id="intro-text">Oh, hi there! You're just in time. I'm Pip the pigeon, and I'll be your trusted guide during this tour around Museumplein, the place in Amsterdam I've called home for years and years. I know everything there is to know about the square, so you're in good hands. When you're ready, put on your headphones, and press start to kick things off.</p>
+    <div class="intro-buttons">
+      <button class="intro-play-btn" id="intro-play-btn" onclick="playIntroAudio()">
+        <span id="intro-play-content" style="display: flex; align-items: center; gap: 0.75rem;">
+          <svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg>
+          Play audio
+        </span>
+      </button>
+      <button class="intro-btn" onclick="startTour()">Start</button>
+    </div>
+  </div>
   
   <div id="media-area">
     <div id="bg-image" class="bg-layer"></div>
@@ -576,6 +671,7 @@
   let currentLineIndex = -1;
   let isPlaying = false;
   let currentAudio = new Audio();
+  let introAudio = new Audio('intro.m4a');
   let isTextHidden = false;
   let taskCompleted = false;
   let findMyInterval = null;
@@ -600,6 +696,23 @@
   const paginatorDotsContainer = document.getElementById('paginator-dots-container');
   const paginatorNumbers = document.getElementById('paginator-numbers');
   const taskMarker = document.getElementById('task-marker');
+
+  function playIntroAudio() {
+    const btnContent = document.getElementById('intro-play-content');
+    if (introAudio.paused) {
+      introAudio.play();
+      btnContent.innerHTML = `<svg viewBox="0 0 12 14" fill="none"><path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="currentColor"/></svg> Pause Audio`;
+    } else {
+      introAudio.pause();
+      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play Audio`;
+    }
+  }
+
+  function startTour() {
+    introAudio.pause();
+    document.getElementById('intro-screen').classList.add('hidden');
+    loadStop(3, true); 
+  }
 
   currentAudio.addEventListener('loadedmetadata', () => {
     const stop = stopsData[currentStopKey];
@@ -627,14 +740,16 @@
       paginatorDotsContainer.appendChild(dot);
     }
     
-    // Voeg cijfer aanduiding toe
     if (paginatorNumbers) {
       paginatorNumbers.textContent = `${activeIndex} / 15`;
     }
   }
 
   function loadStop(key, autoPlay = false) {
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+    if (currentAudio) { 
+      currentAudio.pause(); 
+      currentAudio.currentTime = 0; 
+    }
     isPlaying = false;
     taskCompleted = false;
     updatePlayPauseUI();
@@ -656,6 +771,8 @@
     if(isTextHidden) toggleText();
 
     currentAudio.src = stop.audioSrc;
+    currentAudio.load(); 
+    
     lyricsContainer.innerHTML = '';
     stop.lines.forEach((lineData) => {
       const div = document.createElement('div');
@@ -669,7 +786,9 @@
     startFindMyAnimation();
     highlightLine(0);
 
-    if (autoPlay) togglePlay();
+    if (autoPlay) {
+      setTimeout(() => togglePlay(), 50); 
+    }
   }
 
   function startFindMyAnimation() {
@@ -718,10 +837,20 @@
       isPlaying = false;
       updatePlayPauseUI();
     } else {
-      currentAudio.play().then(() => {
+      let playPromise = currentAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          isPlaying = true;
+          updatePlayPauseUI();
+        }).catch((err) => {
+          console.error("Playback failed/prevented: ", err);
+          isPlaying = false;
+          updatePlayPauseUI();
+        });
+      } else {
         isPlaying = true;
         updatePlayPauseUI();
-      });
+      }
     }
   }
 
@@ -731,7 +860,8 @@
     progressFill.style.width = (currentAudio.currentTime / currentAudio.duration) * 100 + '%';
     
     const stop = stopsData[currentStopKey];
-    if (currentAudio.currentTime >= stop.taskTime && !taskCompleted) {
+    
+    if (currentAudio.currentTime >= stop.taskTime && currentAudio.currentTime < stop.taskTime + 0.3 && !taskCompleted) {
       currentAudio.pause();
       isPlaying = false;
       updatePlayPauseUI();
@@ -761,13 +891,11 @@
       topUiContainer.style.pointerEvents = 'none';
       if (!isTextHidden) toggleText();
       
-      // FIX: Wacht 450ms tot de tekst-inklap animatie (0.4s) he-le-maal klaar is
       setTimeout(() => {
         resizeCanvas();
       }, 450);
     } else {
       userInputBox.classList.add('active');
-      // Scroll direct naar input zodat user het ziet
       lyricsContainer.scrollTo({ top: lyricsContainer.scrollHeight, behavior: 'smooth' });
     }
   }
@@ -782,6 +910,7 @@
     topUiContainer.style.pointerEvents = 'auto';
     
     if (isTextHidden) toggleText();
+    skipTime(0.5); 
     togglePlay();
   }
 
@@ -916,7 +1045,6 @@
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     
-    // Bereken de exacte locatie, ongeacht de canvas flex-grootte
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
 
