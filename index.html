@@ -470,10 +470,10 @@
       <button class="intro-play-btn" id="intro-play-btn" onclick="playIntroAudio()">
         <span id="intro-play-content" style="display: flex; align-items: center; gap: 0.75rem;">
           <svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg>
-          Play Audio
+          Play intro
         </span>
       </button>
-      <button class="intro-btn" onclick="startTour()">Start</button>
+      <button class="intro-btn" onclick="startTour()">Start podwalk</button>
     </div>
   </div>
   
@@ -690,7 +690,7 @@
   introAudio.onended = () => {
     const btnContent = document.getElementById('intro-play-content');
     if (btnContent) {
-      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play Audio`;
+      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play intro`;
     }
   };
 
@@ -710,15 +710,15 @@
       let playPromise = introAudio.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
-          btnContent.innerHTML = `<svg viewBox="0 0 12 14" fill="none"><path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="currentColor"/></svg> Pause Audio`;
+          btnContent.innerHTML = `<svg viewBox="0 0 12 14" fill="none"><path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="currentColor"/></svg> Pause intro`;
         }).catch((err) => {
           console.error("Intro audio playback error:", err);
-          btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play Audio`;
+          btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play intro`;
         });
       }
     } else {
       introAudio.pause();
-      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play Audio`;
+      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play intro`;
     }
   }
 
@@ -728,15 +728,15 @@
       let playPromise = introAudio.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
-          btnContent.innerHTML = `<svg viewBox="0 0 12 14" fill="none"><path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="currentColor"/></svg> Pause Audio`;
+          btnContent.innerHTML = `<svg viewBox="0 0 12 14" fill="none"><path d="M8 14V0H12V14H8ZM0 14V0H4V14H0Z" fill="currentColor"/></svg> Pause intro`;
         }).catch((err) => {
           console.error("Intro audio playback error:", err);
-          btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play Audio`;
+          btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play intro`;
         });
       }
     } else {
       introAudio.pause();
-      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play Audio`;
+      btnContent.innerHTML = `<svg viewBox="0 0 11 14" fill="none"><path d="M0 11 14" fill="none"><path d="M0 14V0L11 7L0 14Z" fill="currentColor"/></svg> Play intro`;
     }
   }
 
